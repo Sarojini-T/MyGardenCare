@@ -1,0 +1,1 @@
+MyGardenCare is a Spring Boot web application that allows users to keep track of their garden inventory and receive personalized notifications on the type of care each plant requires. 
