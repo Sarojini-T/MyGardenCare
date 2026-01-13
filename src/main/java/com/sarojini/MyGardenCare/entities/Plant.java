@@ -30,10 +30,10 @@ public class Plant {
     private String lifeCycle;
 
     @Column(name = "height_in_meters")
-    private Integer heightInMeters;
+    private Double heightInMeters;
 
     @Column(name = "width_in_meters")
-    private Integer widthInMeters;
+    private Double widthInMeters;
 
     @Column
     private String growth;
@@ -121,19 +121,19 @@ public class Plant {
 
     }
 
-    public Integer getHeightInMeters(){
+    public Double getHeightInMeters(){
         return this.heightInMeters;
     }
 
-    public void setHeightInMeters(Integer heightInMeters){
+    public void setHeightInMeters(Double heightInMeters){
         this.heightInMeters = heightInMeters;
     }
 
-    public Integer getWidthInMeters(){
+    public Double getWidthInMeters(){
         return this.widthInMeters;
     }
 
-    public void setWidth(Integer widthInMeters){
+    public void setWidth(Double widthInMeters){
         this.widthInMeters = widthInMeters;
     }
 
