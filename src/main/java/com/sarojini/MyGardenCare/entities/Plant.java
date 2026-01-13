@@ -11,6 +11,9 @@ public class Plant {
     @Column(name = "common_name", nullable = false)
     private String commonName;
 
+    @Column(name = "alternate_names", columnDefinition = "TEXT")
+    private String alternateNames;
+
     @Column(name = "scientific_name", nullable =  false, unique = true)
     private String scientificName;
 
@@ -51,6 +54,19 @@ public class Plant {
         this.commonName = commonName;
     }
 
+    public String getAlternateNames(){
+        return this.alternateNames;
+    }
+
+    public void setAlternateNames(String alternateName){
+        if(this.alternateNames == null) {
+            this.alternateNames =  alternateName;
+        }else{
+            this.alternateNames += ", " + alternateName;
+        }
+
+    }
+
     public String getScientificName(){
         return this.scientificName;
     }
@@ -72,7 +88,12 @@ public class Plant {
     }
 
     public void setLightRequirement(String lightRequirement){
-        this.lightRequirement += ", " + lightRequirement;
+        if(this.lightRequirement == null){
+            this.lightRequirement = lightRequirement;
+        } else{
+            this.lightRequirement += ", " + lightRequirement;
+        }
+
     }
 
     public String getSoilType(){
@@ -80,7 +101,11 @@ public class Plant {
     }
 
     public void setSoilType(String soilType){
-        this.soilType += ", " + soilType;
+        if(this.soilType == null){
+            this.soilType = soilType;
+        } else{
+            this.soilType += ", " + soilType;
+        }
     }
 
     public String getLifeCycle(){
@@ -88,7 +113,12 @@ public class Plant {
     }
 
     public void setLifeCycle(String lifeCycle){
-        this.lifeCycle += ", " + lifeCycle;
+        if(this.lifeCycle == null){
+            this.lifeCycle = lifeCycle;
+        } else{
+            this.lifeCycle += ", " + lifeCycle;
+        }
+
     }
 
     public Integer getHeight(){
