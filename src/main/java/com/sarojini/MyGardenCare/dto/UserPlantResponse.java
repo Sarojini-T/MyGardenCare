@@ -4,8 +4,9 @@ import com.sarojini.MyGardenCare.entities.UserPlant;
 import lombok.Data;
 
 @Data
-public class UserPlantResponseDTO {
-    private long id;
+public class UserPlantResponse {
+    private Long userPlantId;
+    private Long plantId;
     private String plantName;
     private UserPlant.PlantContainer plantContainer;
     private UserPlant.PotSize potSize;
