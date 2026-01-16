@@ -24,9 +24,6 @@ public class User{
     @Column
     private String state;
 
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-//    private List<Plant> plants;
-
     public Long getId(){
         return this.id;
     }

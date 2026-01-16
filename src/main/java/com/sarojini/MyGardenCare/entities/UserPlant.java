@@ -1,28 +1,10 @@
 package com.sarojini.MyGardenCare.entities;
+import com.sarojini.MyGardenCare.enums.*;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "user_plants")
 public class UserPlant {
-    public enum PlantContainer{
-        POT,
-        RAISED_BEDS,
-        OUTDOOR_GROUND,
-        HANGING_BASKET,
-        WINDOW_BOX
-    }
-
-    public enum PotSize{
-        SMALL,
-        MEDIUM,
-        LARGE
-    }
-
-    public enum PlantLocation{
-        INDOOR,
-        OUTDOOR
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

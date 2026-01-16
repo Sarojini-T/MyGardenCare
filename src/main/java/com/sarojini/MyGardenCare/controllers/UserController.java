@@ -38,35 +38,32 @@ public class UserController {
 
     @GetMapping("/search")
     public ResponseEntity<User> searchUser(@RequestParam(name = "username", required = false) String username, @RequestParam(name = "email", required = false) String email){
-        if(username != null  && email != null){
-            Optional<User> userByUsernameAndEmailOptional =  this.userRepository.findByUsernameAndEmail(username, email);
+//        if(username != null  && email != null){
+//            Optional<User> userByUsernameAndEmailOptional =  this.userRepository.findByUsernameAndEmail(username, email);
+//
+//            if(!userByUsernameAndEmailOptional.isPresent()){
+//                return ResponseEntity.notFound().build();
+//            }
+//            User userByUsernameAndEmail = userByUsernameAndEmailOptional.get();
+//            return ResponseEntity.ok(userByUsernameAndEmail);
+//        }
+//        else
 
-            if(!userByUsernameAndEmailOptional.isPresent()){
-                return ResponseEntity.notFound().build();
-            }
-            User userByUsernameAndEmail = userByUsernameAndEmailOptional.get();
-            return ResponseEntity.ok(userByUsernameAndEmail);
-        }
-        else if (username != null){
             Optional<User> userByUsernameOptional =  this.userRepository.findByUsername(username);
+            if(!userByUsernameOptional.isPresent()) return ResponseEntity.notFound().build();
+            return ResponseEntity.ok(userByUsernameOptional.get());
 
-            if(!userByUsernameOptional.isPresent()){
-                return ResponseEntity.notFound().build();
-            }
-            User userByUsername = userByUsernameOptional.get();
-            return ResponseEntity.ok(userByUsername);
-        }
-        else if(email != null ){
-            Optional<User> userByEmailOptional =  this.userRepository.findByEmail(email);
-
-            if(!userByEmailOptional.isPresent()){
-                return ResponseEntity.notFound().build();
-            }
-            User userByEmail = userByEmailOptional.get();
-            return ResponseEntity.ok(userByEmail);
-        }else {
-            return ResponseEntity.notFound().build();
-        }
+//        else if(email != null ){
+//            Optional<User> userByEmailOptional =  this.userRepository.findByEmail(email);
+//
+//            if(!userByEmailOptional.isPresent()){
+//                return ResponseEntity.notFound().build();
+//            }
+//            User userByEmail = userByEmailOptional.get();
+//            return ResponseEntity.ok(userByEmail);
+//        }else {
+//            return ResponseEntity.notFound().build();
+//        }
     }
 
 

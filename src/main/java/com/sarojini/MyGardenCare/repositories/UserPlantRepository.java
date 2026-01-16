@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.sarojini.MyGardenCare.entities.UserPlant;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import com.sarojini.MyGardenCare.enums.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,9 +29,9 @@ public interface UserPlantRepository extends JpaRepository<UserPlant, Long> {
     boolean isDuplicate(
             @Param("user") User user,
             @Param("plant") Plant plant,
-            @Param("plantContainer") UserPlant.PlantContainer plantContainer,
-            @Param("plantLocation") UserPlant.PlantLocation plantLocation,
-            @Param("potSize") UserPlant.PotSize potSize,
+            @Param("plantContainer") PlantContainer plantContainer,
+            @Param("plantLocation") PlantLocation plantLocation,
+            @Param("potSize") PotSize potSize,
             @Param("hasDrainage") Boolean hasDrainage,
             @Param("soilType") String soilType
     );
