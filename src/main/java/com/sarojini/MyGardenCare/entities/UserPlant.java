@@ -3,7 +3,10 @@ import com.sarojini.MyGardenCare.enums.*;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "user_plants")
+@Table(name = "user_plants", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "plant_id", "plant_container",
+        "pot_size", "soil_type", "has_drainage", "plant_location"})
+})
 public class UserPlant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

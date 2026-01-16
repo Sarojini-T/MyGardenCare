@@ -142,19 +142,7 @@ public class UserPlantService {
    @Transactional
     public UserPlantResponse createUserPlant(UserPlantCreateRequest createReq){
         UserPlant newUserPlant = mapCreateReqDtoToUserPlant(createReq);
-
-       boolean isUserPlantInDB = userPlantRepository.isDuplicate(
-               newUserPlant.getUser(),
-               newUserPlant.getPlant(),
-               newUserPlant.getPlantContainer(),
-               newUserPlant.getPlantLocation(),
-               newUserPlant.getPotSize(),
-               newUserPlant.getHasDrainage(),
-               newUserPlant.getSoilType()
-       );
-
-       if(isUserPlantInDB) throw new RuntimeException("This user plant already exists");
-       else userPlantRepository.save(newUserPlant);
+        userPlantRepository.save(newUserPlant);
 
        return  mapUserPlantToResponseDto(newUserPlant);
    }
