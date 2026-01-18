@@ -10,8 +10,9 @@ import com.sarojini.MyGardenCare.repositories.PlantRepository;
 import com.sarojini.MyGardenCare.repositories.UserPlantRepository;
 import com.sarojini.MyGardenCare.repositories.UserRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,21 +33,83 @@ public class UserPlantService {
         this.plantRepository = plantRepository;
     }
 
+    public List<UserPlantResponse> getAllUserPlants(String username){
+        User user = getUser(username);
+
+        List<UserPlant> userPlants = userPlantRepository.findByUser(user);
+
+        return userPlantListToResponse(userPlants);
+    }
+
+    public List<UserPlantResponse> getAllUserPlantsByPlantName(String username, String plantName){
+        User user = getUser(username);
+
+        List<Plant> plantList = getPlants(plantName);
+
+        List<UserPlant> userPlantsByPlantName = userPlantRepository.findByUserAndPlantIn(user, plantList);
+
+        return userPlantListToResponse(userPlantsByPlantName);
+    }
+
+
+    public UserPlantResponse getUserPlantById(Long id, String username){
+        User user = getUser(username);
+        Optional<UserPlant> userPlantByIdOptional = userPlantRepository.findByIdAndUser(id, user);
+        if(!userPlantByIdOptional.isPresent())  throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User Plant " + id + " not found");
+        UserPlant userPlantById = userPlantByIdOptional.get();
+        return mapUserPlantToResponseDto(userPlantById);
+    }
+
+
+
+   @Transactional
+    public UserPlantResponse createUserPlant(UserPlantCreateRequest createReq){
+        UserPlant newUserPlant = mapCreateReqDtoToUserPlant(createReq);
+        userPlantRepository.save(newUserPlant);
+
+       return  mapUserPlantToResponseDto(newUserPlant);
+   }
+
+   @Transactional
+   public  UserPlantResponse updateUserPlantById(Long id, UserPlantUpdateRequest updateReq){
+        UserPlant userPlantToUpdate =  mapUpdateReqDtoToUserPlant(id, updateReq);
+        UserPlant updatedUserPlant = userPlantRepository.save(userPlantToUpdate);
+        return mapUserPlantToResponseDto(updatedUserPlant);
+   }
+
+   public void deleteUserPlantById(String username , Long id){
+        User user = getUser(username);
+        userPlantRepository.deleteByUserAndId(user, id);
+   }
+
+   @Transactional
+   public void deleteUserPlantsByName(String username, String plantName){
+        User user = getUser(username);
+        List<Plant> plantList = getPlants(plantName);
+        userPlantRepository.deleteByUserAndPlantIn(user, plantList);
+   }
+
+   @Transactional
+   public void deleteAllUserPlants(String username){
+        User user = getUser(username);
+        userPlantRepository.deleteByUser(user);
+   }
+
     private User getUser(String username){
         Optional<User> userOptional = userRepository.findByUsername(username);
-        if(!userOptional.isPresent()) throw new RuntimeException("user " + username + " not found");
+        if(!userOptional.isPresent()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User " + username + " not found");
         return userOptional.get();
     }
 
     private List<Plant> getPlants(String plantName){
         List<Plant> plantList = plantRepository.searchByAnyName(plantName);
-        if(plantList.isEmpty()) throw new RuntimeException(plantName + " not found");
+        if(plantList.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, plantName + " not found");
         return plantList;
     }
 
     private Plant getPlantById(Long id){
         Optional<Plant> plantByIdOptional =  plantRepository.findById(id);
-        if(!plantByIdOptional.isPresent()) throw new RuntimeException("Plant with id " + id + " not found");
+        if(!plantByIdOptional.isPresent()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Plant " + id + " not found");
         return plantByIdOptional.get();
     }
 
@@ -82,7 +145,7 @@ public class UserPlantService {
 
     private UserPlant mapUpdateReqDtoToUserPlant(Long id, UserPlantUpdateRequest updateReq){
         Optional<UserPlant> userPlantToUpdateOptional = userPlantRepository.findById(id);
-        if(!userPlantToUpdateOptional.isPresent()) throw new RuntimeException("User Plant not found");
+        if(!userPlantToUpdateOptional.isPresent()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User Plant " + id + " not found");
 
         UserPlant userPlantToUpdate =  userPlantToUpdateOptional.get();
         if (updateReq.getPlantContainer() != null) {
@@ -101,7 +164,6 @@ public class UserPlantService {
     }
 
 
-
     private List<UserPlantResponse> userPlantListToResponse(List<UserPlant> userPlants){
         List<UserPlantResponse> userPlantResponseList = new ArrayList<>();
         for(UserPlant userPlant : userPlants){
@@ -109,67 +171,4 @@ public class UserPlantService {
         }
         return userPlantResponseList;
     }
-
-    public List<UserPlantResponse> getAllUserPlants(String username){
-        User user = getUser(username);
-
-        List<UserPlant> userPlants = userPlantRepository.findByUser(user);
-
-        return userPlantListToResponse(userPlants);
-    }
-
-    public List<UserPlantResponse> getAllUserPlantsByPlantName(String username, String plantName){
-        User user = getUser(username);
-
-        List<Plant> plantList = getPlants(plantName);
-
-        List<UserPlant> userPlantsByPlantName = userPlantRepository.findByUserAndPlantIn(user, plantList);
-
-        return userPlantListToResponse(userPlantsByPlantName);
-    }
-
-
-    public UserPlantResponse getUserPlantById(Long id, String username){
-        User user = getUser(username);
-        Optional<UserPlant> userPlantByIdOptional = userPlantRepository.findByIdAndUser(id, user);
-        if(!userPlantByIdOptional.isPresent())  throw new RuntimeException("Plant with id " + id + " not found");
-        UserPlant userPlantById = userPlantByIdOptional.get();
-        return mapUserPlantToResponseDto(userPlantById);
-    }
-
-
-
-   @Transactional
-    public UserPlantResponse createUserPlant(UserPlantCreateRequest createReq){
-        UserPlant newUserPlant = mapCreateReqDtoToUserPlant(createReq);
-        userPlantRepository.save(newUserPlant);
-
-       return  mapUserPlantToResponseDto(newUserPlant);
-   }
-
-   @Transactional
-   public  UserPlantResponse updateUserPlantById(Long id, UserPlantUpdateRequest updateReq){
-        UserPlant userPlantToUpdate =  mapUpdateReqDtoToUserPlant(id, updateReq);
-        UserPlant updatedUserPlant = userPlantRepository.save(userPlantToUpdate);
-        return mapUserPlantToResponseDto(updatedUserPlant);
-   }
-
-   public void deleteUserPlantById(Long id){
-        userPlantRepository.deleteById(id);
-   }
-
-   @Modifying
-   @Transactional
-   public void deleteUserPlantsByName(String username, String plantName){
-        User user = getUser(username);
-        List<Plant> plantList = getPlants(plantName);
-        userPlantRepository.deleteByUserAndPlantIn(user, plantList);
-   }
-
-   @Modifying
-   @Transactional
-   public void deleteAllUserPlants(String username){
-        User user = getUser(username);
-        userPlantRepository.deleteByUser(user);
-   }
 }
