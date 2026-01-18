@@ -3,9 +3,6 @@ import com.sarojini.MyGardenCare.entities.Plant;
 import com.sarojini.MyGardenCare.entities.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.sarojini.MyGardenCare.entities.UserPlant;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import com.sarojini.MyGardenCare.enums.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,4 +14,5 @@ public interface UserPlantRepository extends JpaRepository<UserPlant, Long> {
 
     void deleteByUser(User user);
     void deleteByUserAndPlantIn(User user, List<Plant> plant);
+    void deleteByUserAndId(User user, Long id);
 }
