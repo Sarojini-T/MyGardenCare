@@ -1,12 +1,18 @@
 package com.sarojini.MyGardenCare.entities;
 import com.sarojini.MyGardenCare.enums.*;
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "user_plants", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "plant_id", "plant_container",
         "pot_size", "soil_type", "has_drainage", "plant_location"})
 })
+@Setter
+@Getter
+@NoArgsConstructor
 public class UserPlant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,13 +22,17 @@ public class UserPlant {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plant_id", nullable = false)
     private Plant plant;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "plant_container")
+    @Column(name = "plant_container", nullable = false)
     private PlantContainer plantContainer;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "plant_location", nullable = false)
+    private PlantLocation plantLocation;
 
     @Enumerated(EnumType.STRING)
     @Column(name =  "pot_size")
@@ -33,72 +43,4 @@ public class UserPlant {
 
     @Column(name = "soil_type")
     private String soilType;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "plant_location")
-    private PlantLocation plantLocation;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Plant getPlant() {
-        return plant;
-    }
-
-    public void setPlant(Plant plant) {
-        this.plant = plant;
-    }
-
-    public PlantContainer getPlantContainer() {
-        return plantContainer;
-    }
-
-    public void setPlantContainer(PlantContainer plantContainer) {
-        this.plantContainer = plantContainer;
-    }
-
-    public PotSize getPotSize() {
-        return potSize;
-    }
-
-    public void setPotSize(PotSize potSize) {
-        this.potSize = potSize;
-    }
-
-    public Boolean getHasDrainage() {
-        return hasDrainage;
-    }
-
-    public void setHasDrainage(Boolean hasDrainage) {
-        this.hasDrainage = hasDrainage;
-    }
-
-    public String getSoilType() {
-        return soilType;
-    }
-
-    public void setSoilType(String soilType) {
-        this.soilType = soilType;
-    }
-
-    public PlantLocation getPlantLocation() {
-        return plantLocation;
-    }
-
-    public void setPlantLocation(PlantLocation plantLocation) {
-        this.plantLocation = plantLocation;
-    }
 }
