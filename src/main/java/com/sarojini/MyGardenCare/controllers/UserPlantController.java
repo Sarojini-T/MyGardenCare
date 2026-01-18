@@ -7,10 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
-
+import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1/user-plants")
+@RequestMapping("/api/v1/user-plants/{username}")
 public class UserPlantController {
     private final UserPlantService userPlantService;
 
@@ -18,35 +18,32 @@ public class UserPlantController {
         this.userPlantService = userPlantService;
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<UserPlantResponse>> getAllUserPlants(@RequestParam("username") String username){
+    @GetMapping
+    public ResponseEntity<List<UserPlantResponse>> getAllUserPlants(@PathVariable String username){
         List<UserPlantResponse> userPlants = userPlantService.getAllUserPlants(username);
-        if(userPlants.isEmpty()) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(userPlants);
     }
 
-    @GetMapping("/query")
-    public ResponseEntity<List<UserPlantResponse>> getAllUserPlantsByPlantName(@RequestParam("username") String username,
-                                                                       @RequestParam("plant-name") String plantName){
+    @GetMapping("/search")
+    public ResponseEntity<List<UserPlantResponse>> getAllUserPlantsByPlantName(@PathVariable String username, @RequestParam("plant-name") String plantName){
        List<UserPlantResponse> userPlantsByPlantName = userPlantService.getAllUserPlantsByPlantName(username, plantName);
        if(userPlantsByPlantName.isEmpty()) return ResponseEntity.notFound().build();
        return ResponseEntity.ok(userPlantsByPlantName);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserPlantResponse> getUserPlantById(@PathVariable Long userPlantId,
-                                                      @RequestParam("username") String username){
-        UserPlantResponse userPlantById = userPlantService.getUserPlantById(userPlantId, username);
+    public ResponseEntity<UserPlantResponse> getUserPlantById(@PathVariable Long id, @PathVariable  String username){
+        UserPlantResponse userPlantById = userPlantService.getUserPlantById(id, username);
         return ResponseEntity.ok(userPlantById);
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<UserPlantResponse> createUserPlant(@RequestBody UserPlantCreateRequest createReq){
+    @PostMapping
+    public ResponseEntity<UserPlantResponse> createUserPlant(@Valid @RequestBody UserPlantCreateRequest createReq){
         UserPlantResponse newUserPlant = userPlantService.createUserPlant(createReq);
         return ResponseEntity.status(HttpStatus.CREATED).body(newUserPlant);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<UserPlantResponse> updateUserPlantById(@PathVariable Long id,
                                                                  @RequestBody UserPlantUpdateRequest updateReq){
         UserPlantResponse updatedUserPlant = userPlantService.updateUserPlantById(id, updateReq);
@@ -55,20 +52,19 @@ public class UserPlantController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUserPlantById(@PathVariable("id") Long id){
-        userPlantService.deleteUserPlantById(id);
+    public ResponseEntity<Void> deleteUserPlantById(@PathVariable String username, @PathVariable Long id){
+        userPlantService.deleteUserPlantById(username, id);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/by-plant-name")
-    public ResponseEntity<Void> deleteUserPlantsByName(@RequestParam("username") String username,
-                                                       @RequestParam("plant-name") String plantName){
+    public ResponseEntity<Void> deleteUserPlantsByName(@PathVariable String username, @RequestParam("plant-name") String plantName){
         userPlantService.deleteUserPlantsByName(username, plantName);
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/delete-all")
-    public ResponseEntity<Void> deleteAllUserPlants(@RequestParam("username")String username){
+    @DeleteMapping
+    public ResponseEntity<Void> deleteAllUserPlants(@PathVariable String username){
         userPlantService.deleteAllUserPlants(username);
         return ResponseEntity.noContent().build();
     }
