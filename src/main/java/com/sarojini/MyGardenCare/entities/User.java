@@ -1,9 +1,16 @@
 package com.sarojini.MyGardenCare.entities;
-
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import java.time.Instant;
 
 @Entity
-@Table(name="users")
+@Table(name="app_users")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -18,48 +25,39 @@ public class User{
     @Column(nullable = false)
     private String password;
 
-    @Column
-    private String city;
+    private String zipcode;
 
-    @Column
-    private String state;
+    @CreationTimestamp
+    private Instant createdAt;
 
-//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-//    private List<Plant> plants;
+    @UpdateTimestamp
+    private Instant updatedAt;
 
-    public Long getId(){
-        return this.id;
-    }
-
-    public void setId(Long id){
-        this.id = id;
-    }
-
-    public String getUsername(){
-        return this.username;
-    }
-
-    public void setUsername(String username){
+    public User(String username, String email, String password){
         this.username = username;
-    }
-
-    public String getEmail(){ return this.email;}
-
-    public void setEmail(String email){this.email = email;}
-
-    public String getPassword(){
-        return this.password;
-    }
-
-    public void setPassword(String password){
+        this.email = email;
         this.password = password;
     }
 
-    public String getCity(){return this.city; }
+    public void updateZipCode(String zipcode){
+        if(!zipcode.matches("\\d{5}")) throw new IllegalArgumentException("Zipcode requires 5 digitis");
+        this.zipcode = zipcode;
+    }
 
-    public void setCity(String city){this.city = city;}
+    public void deleteZipcode(){
+        this.zipcode = null;
+    }
 
-    public String getState(){return this.state; }
+    public void updateUsername(String username){
+        if(username == null || username.isBlank()) throw new IllegalArgumentException("Username cannot be empty");
+        this.username = username;
+    }
 
-    public void setState(String state){this.state = state;}
+    public void updateEmail(String email){
+        this.email = email;
+    }
+
+    public void updatePassword(String password){
+        this.password = password;
+    }
 }

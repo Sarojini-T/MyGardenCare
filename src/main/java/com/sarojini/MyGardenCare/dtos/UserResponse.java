@@ -1,8 +1,8 @@
 package com.sarojini.MyGardenCare.dtos;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 
-@Getter
+@Data
 @AllArgsConstructor
 public class UserResponse {
     private Long id;
