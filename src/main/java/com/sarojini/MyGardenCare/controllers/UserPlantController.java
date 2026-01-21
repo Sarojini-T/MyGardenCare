@@ -2,6 +2,7 @@ package com.sarojini.MyGardenCare.controllers;
 import com.sarojini.MyGardenCare.dtos.UserPlantCreateRequest;
 import com.sarojini.MyGardenCare.dtos.UserPlantResponse;
 import com.sarojini.MyGardenCare.dtos.UserPlantUpdateRequest;
+import com.sarojini.MyGardenCare.dtos.UserUpdateRequest;
 import com.sarojini.MyGardenCare.services.UserPlantService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +11,7 @@ import java.util.List;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/v1/user-plants/{username}")
+@RequestMapping("/api/v1/users/{username}/plants")
 public class UserPlantController {
     private final UserPlantService userPlantService;
 
@@ -27,7 +28,6 @@ public class UserPlantController {
     @GetMapping("/search")
     public ResponseEntity<List<UserPlantResponse>> getAllUserPlantsByPlantName(@PathVariable String username, @RequestParam("plant-name") String plantName){
        List<UserPlantResponse> userPlantsByPlantName = userPlantService.getAllUserPlantsByPlantName(username, plantName);
-       if(userPlantsByPlantName.isEmpty()) return ResponseEntity.notFound().build();
        return ResponseEntity.ok(userPlantsByPlantName);
     }
 
@@ -38,15 +38,17 @@ public class UserPlantController {
     }
 
     @PostMapping
-    public ResponseEntity<UserPlantResponse> createUserPlant(@Valid @RequestBody UserPlantCreateRequest createReq){
-        UserPlantResponse newUserPlant = userPlantService.createUserPlant(createReq);
+    public ResponseEntity<UserPlantResponse> createUserPlant(@PathVariable String username,
+                                                             @Valid @RequestBody UserPlantCreateRequest createReq){
+        UserPlantResponse newUserPlant = userPlantService.createUserPlant(username, createReq);
         return ResponseEntity.status(HttpStatus.CREATED).body(newUserPlant);
     }
 
-    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
     public ResponseEntity<UserPlantResponse> updateUserPlantById(@PathVariable Long id,
+                                                                 @PathVariable String username,
                                                                  @RequestBody UserPlantUpdateRequest updateReq){
-        UserPlantResponse updatedUserPlant = userPlantService.updateUserPlantById(id, updateReq);
+        UserPlantResponse updatedUserPlant = userPlantService.updateUserPlantById(username, id, updateReq);
         return ResponseEntity.ok(updatedUserPlant);
 
     }

@@ -46,7 +46,7 @@ public class UserPlant {
     private PotSize potSize;
 
     @Column(name = "has_drainage")
-    private boolean hasDrainage;
+    private Boolean hasDrainage;
 
     @Column(name = "soil_type")
     private String soilType;

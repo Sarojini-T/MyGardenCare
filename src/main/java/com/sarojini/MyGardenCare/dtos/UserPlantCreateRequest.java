@@ -6,16 +6,16 @@ import lombok.Data;
 
 @Data
 public class UserPlantCreateRequest {
-    @NotBlank
-    private String username;
-
-    @NotNull
+    @NotNull(message = "Plant id cannot be null")
     private Long plantId;
 
-    @NotNull
+    @NotBlank(message = "Nickname cannot be blank")
+    private String nickname;
+
+    @NotNull(message = "Plant container cannot be null")
     private PlantContainer plantContainer;
 
-    @NotNull
+    @NotNull(message = "Plant location cannot be null")
     private PlantLocation plantLocation;
 
     private PotSize potSize;

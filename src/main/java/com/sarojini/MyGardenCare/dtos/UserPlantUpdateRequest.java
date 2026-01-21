@@ -6,8 +6,6 @@ import lombok.Data;
 
 @Data
 public class UserPlantUpdateRequest {
-    @NotBlank
-    private String username;
     private PlantContainer plantContainer;
     private PotSize potSize;
     private Boolean hasDrainage;

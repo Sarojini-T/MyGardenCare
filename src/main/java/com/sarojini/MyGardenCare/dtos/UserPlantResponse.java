@@ -7,6 +7,7 @@ public class UserPlantResponse {
     private Long userPlantId;
     private Long plantId;
     private String plantName;
+    private String nickname;
     private PlantContainer plantContainer;
     private PotSize potSize;
     private Boolean hasDrainage;

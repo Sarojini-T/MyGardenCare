@@ -6,6 +6,9 @@ import com.sarojini.MyGardenCare.dtos.UserPlantUpdateRequest;
 import com.sarojini.MyGardenCare.entities.Plant;
 import com.sarojini.MyGardenCare.entities.User;
 import com.sarojini.MyGardenCare.entities.UserPlant;
+import com.sarojini.MyGardenCare.enums.PlantContainer;
+import com.sarojini.MyGardenCare.enums.PlantLocation;
+import com.sarojini.MyGardenCare.enums.PotSize;
 import com.sarojini.MyGardenCare.repositories.PlantRepository;
 import com.sarojini.MyGardenCare.repositories.UserPlantRepository;
 import com.sarojini.MyGardenCare.repositories.UserRepository;
@@ -35,7 +38,6 @@ public class UserPlantService {
 
     public List<UserPlantResponse> getAllUserPlants(String username){
         User user = getUser(username);
-
         List<UserPlant> userPlants = userPlantRepository.findByUser(user);
 
         return userPlantListToResponse(userPlants);
@@ -43,9 +45,7 @@ public class UserPlantService {
 
     public List<UserPlantResponse> getAllUserPlantsByPlantName(String username, String plantName){
         User user = getUser(username);
-
         List<Plant> plantList = getPlants(plantName);
-
         List<UserPlant> userPlantsByPlantName = userPlantRepository.findByUserAndPlantIn(user, plantList);
 
         return userPlantListToResponse(userPlantsByPlantName);
@@ -54,27 +54,63 @@ public class UserPlantService {
 
     public UserPlantResponse getUserPlantById(Long id, String username){
         User user = getUser(username);
+
         Optional<UserPlant> userPlantByIdOptional = userPlantRepository.findByIdAndUser(id, user);
         if(!userPlantByIdOptional.isPresent())  throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User Plant " + id + " not found");
         UserPlant userPlantById = userPlantByIdOptional.get();
+
         return mapUserPlantToResponseDto(userPlantById);
     }
 
 
+    public UserPlantResponse createUserPlant(String username, UserPlantCreateRequest createReq){
+        PlantContainer plantContainer = createReq.getPlantContainer();
+        PlantLocation plantLocation = createReq.getPlantLocation();
+        PotSize potSize = createReq.getPotSize();
+        Boolean hasDrainage = createReq.getHasDrainage();
 
-   @Transactional
-    public UserPlantResponse createUserPlant(UserPlantCreateRequest createReq){
-        UserPlant newUserPlant = mapCreateReqDtoToUserPlant(createReq);
-        userPlantRepository.save(newUserPlant);
+        validatePlantContainerRules(plantContainer, plantLocation, potSize, hasDrainage);
 
-       return  mapUserPlantToResponseDto(newUserPlant);
+        User user = getUser(username);
+
+        UserPlant newUserPlant = mapCreateReqDtoToUserPlant(user,createReq);
+        UserPlant savedUserPlant = userPlantRepository.save(newUserPlant);
+
+        return  mapUserPlantToResponseDto(savedUserPlant);
    }
 
    @Transactional
-   public  UserPlantResponse updateUserPlantById(Long id, UserPlantUpdateRequest updateReq){
-        UserPlant userPlantToUpdate =  mapUpdateReqDtoToUserPlant(id, updateReq);
-        UserPlant updatedUserPlant = userPlantRepository.save(userPlantToUpdate);
-        return mapUserPlantToResponseDto(updatedUserPlant);
+   public  UserPlantResponse updateUserPlantById(String username, Long id, UserPlantUpdateRequest updateReq){
+        User user = getUser(username);
+
+        Optional<UserPlant> userPlantToUpdateOptional = userPlantRepository.findByIdAndUser(id, user);
+        if(!userPlantToUpdateOptional.isPresent()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User Plant " + id + " not found");
+        UserPlant userPlantToUpdate =  userPlantToUpdateOptional.get();
+
+       PlantContainer plantContainer = updateReq.getPlantContainer() != null ? updateReq.getPlantContainer() : userPlantToUpdate.getPlantContainer();
+       PlantLocation plantLocation = updateReq.getPlantLocation() != null ? updateReq.getPlantLocation() : userPlantToUpdate.getPlantLocation();
+       PotSize potSize = updateReq.getPotSize() != null ? updateReq.getPotSize() : userPlantToUpdate.getPotSize();
+       Boolean hasDrainage = updateReq.getHasDrainage() != null ? updateReq.getHasDrainage() : userPlantToUpdate.getHasDrainage();
+
+       validatePlantContainerRules(plantContainer, plantLocation, potSize, hasDrainage);
+
+
+       if (plantContainer != null) {
+           userPlantToUpdate.setPlantContainer(plantContainer);
+       }
+       if (potSize != null) {
+           userPlantToUpdate.setPotSize(updateReq.getPotSize());
+       }
+       if(hasDrainage != null && !hasDrainage.equals(userPlantToUpdate.getHasDrainage())){
+           userPlantToUpdate.setHasDrainage(hasDrainage);
+       }
+       if (plantLocation != null) {
+           userPlantToUpdate.setPlantLocation(plantLocation);
+       }
+       if (updateReq.getSoilType() != null) {
+           userPlantToUpdate.setSoilType(updateReq.getSoilType());
+       }
+        return mapUserPlantToResponseDto(userPlantToUpdate);
    }
 
    public void deleteUserPlantById(String username , Long id){
@@ -118,6 +154,7 @@ public class UserPlantService {
         response.setUserPlantId(userPlant.getId());
         response.setPlantId(userPlant.getPlant().getId());
         response.setPlantName(userPlant.getPlant().getCommonName());
+        response.setNickname(userPlant.getNickname());
         response.setPlantContainer(userPlant.getPlantContainer());
         response.setPotSize(userPlant.getPotSize());
         response.setHasDrainage(userPlant.getHasDrainage());
@@ -127,42 +164,19 @@ public class UserPlantService {
         return response;
     }
 
-    private UserPlant mapCreateReqDtoToUserPlant(UserPlantCreateRequest createReq){
-        UserPlant newUserPlant = new UserPlant();
-        User user = getUser(createReq.getUsername());
+    private UserPlant mapCreateReqDtoToUserPlant(User user, UserPlantCreateRequest createReq){
         Plant plant = getPlantById(createReq.getPlantId());
+        String nickname = createReq.getNickname();
+        PlantContainer plantContainer = createReq.getPlantContainer();
+        PlantLocation plantLocation = createReq.getPlantLocation();
 
-        newUserPlant.setUser(user);
-        newUserPlant.setPlant(plant);
-        newUserPlant.setPlantContainer(createReq.getPlantContainer());
+        UserPlant newUserPlant = new UserPlant(nickname, user, plant, plantContainer, plantLocation);
         newUserPlant.setPotSize(createReq.getPotSize());
-        newUserPlant.setPlantLocation(createReq.getPlantLocation());
         newUserPlant.setHasDrainage(createReq.getHasDrainage());
         newUserPlant.setSoilType(createReq.getSoilType());
 
         return newUserPlant;
     }
-
-    private UserPlant mapUpdateReqDtoToUserPlant(Long id, UserPlantUpdateRequest updateReq){
-        Optional<UserPlant> userPlantToUpdateOptional = userPlantRepository.findById(id);
-        if(!userPlantToUpdateOptional.isPresent()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User Plant " + id + " not found");
-
-        UserPlant userPlantToUpdate =  userPlantToUpdateOptional.get();
-        if (updateReq.getPlantContainer() != null) {
-            userPlantToUpdate.setPlantContainer(updateReq.getPlantContainer());
-        }
-        if (updateReq.getPotSize() != null) {
-            userPlantToUpdate.setPotSize(updateReq.getPotSize());
-        }
-        if (updateReq.getPlantLocation() != null) {
-            userPlantToUpdate.setPlantLocation(updateReq.getPlantLocation());
-        }
-        if (updateReq.getSoilType() != null) {
-            userPlantToUpdate.setSoilType(updateReq.getSoilType());
-        }
-        return userPlantToUpdate;
-    }
-
 
     private List<UserPlantResponse> userPlantListToResponse(List<UserPlant> userPlants){
         List<UserPlantResponse> userPlantResponseList = new ArrayList<>();
@@ -170,5 +184,31 @@ public class UserPlantService {
             userPlantResponseList.add(mapUserPlantToResponseDto(userPlant));
         }
         return userPlantResponseList;
+    }
+
+    public void validatePlantContainerRules(PlantContainer plantContainer,
+                                            PlantLocation plantLocation,
+                                            PotSize potSize,
+                                            Boolean hasDrainage){
+        if(plantContainer ==  PlantContainer.OUTDOOR_GROUND &&
+                plantLocation == PlantLocation.INDOOR){
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cannot select outdoor_ground if plantLocation is indoor"
+            );
+        }
+        if(plantContainer != PlantContainer.POT && potSize != null){
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cannot select pot size if container isn't a pot"
+            );
+        }
+
+        if(plantContainer != PlantContainer.POT && hasDrainage != null){
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Cannot select has drainage if container isn't a pot"
+            );
+        }
     }
 }
