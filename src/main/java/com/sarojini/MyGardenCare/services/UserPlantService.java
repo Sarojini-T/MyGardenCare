@@ -1,8 +1,8 @@
 package com.sarojini.MyGardenCare.services;
 
-import com.sarojini.MyGardenCare.dto.UserPlantCreateRequest;
-import com.sarojini.MyGardenCare.dto.UserPlantResponse;
-import com.sarojini.MyGardenCare.dto.UserPlantUpdateRequest;
+import com.sarojini.MyGardenCare.dtos.UserPlantCreateRequest;
+import com.sarojini.MyGardenCare.dtos.UserPlantResponse;
+import com.sarojini.MyGardenCare.dtos.UserPlantUpdateRequest;
 import com.sarojini.MyGardenCare.entities.Plant;
 import com.sarojini.MyGardenCare.entities.User;
 import com.sarojini.MyGardenCare.entities.UserPlant;
@@ -96,7 +96,7 @@ public class UserPlantService {
    }
 
     private User getUser(String username){
-        Optional<User> userOptional = userRepository.findByUsername(username);
+        Optional<User> userOptional = userRepository.findByUsernameIgnoreCase(username);
         if(!userOptional.isPresent()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User " + username + " not found");
         return userOptional.get();
     }

@@ -6,14 +6,14 @@ import lombok.Data;
 
 @Data
 public class UserCreateRequest {
-    @NotBlank
+    @NotBlank(message = "Username is required")
     private String username;
 
-    @NotBlank
-    @Email(message = "Email is invalid")
+    @NotBlank(message = "Email is required")
+    @Email(message = "Please provide a valid email address")
     private String email;
 
-    @NotBlank
+    @NotBlank(message = "Password cannot be blank")
     private String password;
 
     @Pattern(regexp = "\\d{5}", message = "zipcode should contain 5 digits")

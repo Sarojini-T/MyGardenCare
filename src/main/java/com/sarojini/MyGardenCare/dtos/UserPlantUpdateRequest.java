@@ -1,9 +1,7 @@
-package com.sarojini.MyGardenCare.dto;
+package com.sarojini.MyGardenCare.dtos;
 import com.sarojini.MyGardenCare.enums.*;
 
-import com.sarojini.MyGardenCare.entities.UserPlant;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data

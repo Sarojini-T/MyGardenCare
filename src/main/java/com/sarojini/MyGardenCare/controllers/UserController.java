@@ -3,6 +3,7 @@ import com.sarojini.MyGardenCare.dtos.UserCreateRequest;
 import com.sarojini.MyGardenCare.dtos.UserResponse;
 import com.sarojini.MyGardenCare.dtos.UserUpdateRequest;
 import com.sarojini.MyGardenCare.services.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -30,14 +31,14 @@ public class UserController {
     }
 
    @PostMapping
-    public ResponseEntity<UserResponse> createNewUser(@RequestBody UserCreateRequest userCreateReq){
+    public ResponseEntity<UserResponse> createNewUser(@Valid @RequestBody UserCreateRequest userCreateReq){
         UserResponse newUser = userService.createNewUser(userCreateReq);
         return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
    }
 
    @PutMapping("/{id}")
    public ResponseEntity<UserResponse> updateUserById(@PathVariable Long id,
-                                                      @RequestBody UserUpdateRequest userUpdateReq){
+                                                      @Valid @RequestBody UserUpdateRequest userUpdateReq){
        UserResponse updatedUserById =  userService.updateUserById(id, userUpdateReq);
         return ResponseEntity.ok(updatedUserById);
    }

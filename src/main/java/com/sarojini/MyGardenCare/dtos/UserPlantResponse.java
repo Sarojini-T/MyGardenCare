@@ -1,4 +1,4 @@
-package com.sarojini.MyGardenCare.dto;
+package com.sarojini.MyGardenCare.dtos;
 import com.sarojini.MyGardenCare.enums.*;
 import lombok.Data;
 

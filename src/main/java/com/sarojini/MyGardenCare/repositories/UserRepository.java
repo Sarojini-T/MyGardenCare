@@ -4,8 +4,9 @@ import com.sarojini.MyGardenCare.entities.User;
 import java.util.Optional;
 
 public interface UserRepository extends CrudRepository<User, Long> {
-    Optional<User> findByUsername(String username);
-    Boolean existsByUsername(String username);
+    Optional<User> findByUsernameIgnoreCase(String username);
+    Boolean existsByUsernameIgnoreCase(String username);
+    Boolean existsByEmailIgnoreCase(String email);
 }
 
 

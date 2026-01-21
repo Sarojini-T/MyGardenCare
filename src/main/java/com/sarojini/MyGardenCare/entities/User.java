@@ -40,7 +40,7 @@ public class User{
     }
 
     public void updateZipCode(String zipcode){
-        if(!zipcode.matches("\\d{5}")) throw new IllegalArgumentException("Zipcode requires 5 digitis");
+        if(!zipcode.matches("\\d{5}")) throw new IllegalArgumentException("Zipcode requires 5 digits");
         this.zipcode = zipcode;
     }
 

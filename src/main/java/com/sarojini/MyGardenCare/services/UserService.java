@@ -25,14 +25,17 @@ public class UserService {
     }
 
     public UserResponse getUserByUsername(String username){
-        Optional<User> userByUsernameOptional = userRepository.findByUsername(username);
+        Optional<User> userByUsernameOptional = userRepository.findByUsernameIgnoreCase(username);
         if(userByUsernameOptional.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User " + username + " not found.");
         return mapUserToUserResponse(userByUsernameOptional.get());
     }
 
     public UserResponse createNewUser(UserCreateRequest userCreateReq){
-        if (userRepository.existsByUsername(userCreateReq.getUsername())) {
+        if (userRepository.existsByUsernameIgnoreCase(userCreateReq.getUsername())) {
             throw new RuntimeException("Username already taken");
+        }
+        if(userRepository.existsByEmailIgnoreCase(userCreateReq.getEmail())){
+            throw new RuntimeException("Email already taken");
         }
 
         User newUser = mapUserCreateReqToUser(userCreateReq);
@@ -49,10 +52,11 @@ public class UserService {
         String reqZipcode = userUpdateReq.getZipcode();
 
         if(reqUsername != null && !userToUpdate.getUsername().equals(reqUsername)){
-            if (userRepository.existsByUsername(reqUsername)) throw new RuntimeException("Username already taken");
+            if (userRepository.existsByUsernameIgnoreCase(reqUsername)) throw new RuntimeException("Username already taken");
             userToUpdate.updateUsername(reqUsername);
         }
         if(reqEmail != null){
+            if(userRepository.existsByEmailIgnoreCase(reqEmail)) throw new RuntimeException("Email exists already");
             userToUpdate.updateEmail(reqEmail);
         }
         if(reqPassword != null){
