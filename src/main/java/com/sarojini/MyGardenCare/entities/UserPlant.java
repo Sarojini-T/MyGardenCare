@@ -1,22 +1,29 @@
 package com.sarojini.MyGardenCare.entities;
 import com.sarojini.MyGardenCare.enums.*;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.Instant;
 
 @Entity
-@Table(name = "user_plants", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "plant_id", "plant_container",
-        "pot_size", "soil_type", "has_drainage", "plant_location"})
-})
 @Setter
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "user_plants", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "nickname"})
+})
 public class UserPlant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(nullable = false)
+    private String nickname;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -39,8 +46,23 @@ public class UserPlant {
     private PotSize potSize;
 
     @Column(name = "has_drainage")
-    private Boolean hasDrainage;
+    private boolean hasDrainage;
 
     @Column(name = "soil_type")
     private String soilType;
+
+    @CreationTimestamp
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    private Instant updatedAt;
+
+   public UserPlant(String nickname, User user, Plant plant,
+                    PlantContainer plantContainer, PlantLocation plantLocation){
+       this.nickname = nickname;
+       this.user = user;
+       this.plant = plant;
+       this.plantContainer = plantContainer;
+       this.plantLocation =  plantLocation;
+   }
 }
