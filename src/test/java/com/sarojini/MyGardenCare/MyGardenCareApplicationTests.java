@@ -1,4 +1,4 @@
-package com.sarojini.MyGardenCare;
+package com.MyGardenCare;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,4 +1,4 @@
-package com.sarojini.MyGardenCare.config;
+package com.MyGardenCare.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

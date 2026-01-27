@@ -1,9 +1,9 @@
-package com.sarojini.MyGardenCare.services;
+package com.MyGardenCare.services;
 
-import com.sarojini.MyGardenCare.dtos.PlantApiDto;
-import com.sarojini.MyGardenCare.dtos.PlantResponse;
-import com.sarojini.MyGardenCare.entities.Plant;
-import com.sarojini.MyGardenCare.repositories.PlantRepository;
+import com.MyGardenCare.dtos.PlantApiDto;
+import com.MyGardenCare.dtos.PlantResponse;
+import com.MyGardenCare.entities.Plant;
+import com.MyGardenCare.repositories.PlantRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;

@@ -1,7 +1,7 @@
-package com.sarojini.MyGardenCare.controllers;
-import com.sarojini.MyGardenCare.dtos.PlantApiDto;
-import com.sarojini.MyGardenCare.dtos.PlantResponse;
-import com.sarojini.MyGardenCare.services.PlantService;
+package com.MyGardenCare.controllers;
+import com.MyGardenCare.dtos.PlantApiDto;
+import com.MyGardenCare.dtos.PlantResponse;
+import com.MyGardenCare.services.PlantService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

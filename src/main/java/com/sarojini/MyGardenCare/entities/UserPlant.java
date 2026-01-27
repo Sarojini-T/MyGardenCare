@@ -1,4 +1,7 @@
-package com.sarojini.MyGardenCare.entities;
+package com.MyGardenCare.entities;
+import com.MyGardenCare.enums.PlantContainer;
+import com.MyGardenCare.enums.PlantLocation;
+import com.MyGardenCare.enums.PotSize;
 import com.sarojini.MyGardenCare.enums.*;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

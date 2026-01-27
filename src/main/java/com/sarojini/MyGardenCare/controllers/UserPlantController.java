@@ -1,9 +1,8 @@
-package com.sarojini.MyGardenCare.controllers;
-import com.sarojini.MyGardenCare.dtos.UserPlantCreateRequest;
-import com.sarojini.MyGardenCare.dtos.UserPlantResponse;
-import com.sarojini.MyGardenCare.dtos.UserPlantUpdateRequest;
-import com.sarojini.MyGardenCare.dtos.UserUpdateRequest;
-import com.sarojini.MyGardenCare.services.UserPlantService;
+package com.MyGardenCare.controllers;
+import com.MyGardenCare.dtos.UserPlantCreateRequest;
+import com.MyGardenCare.dtos.UserPlantResponse;
+import com.MyGardenCare.dtos.UserPlantUpdateRequest;
+import com.MyGardenCare.services.UserPlantService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

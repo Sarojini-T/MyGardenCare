@@ -1,4 +1,4 @@
-package com.sarojini.MyGardenCare.entities;
+package com.MyGardenCare.entities;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;

@@ -1,7 +1,9 @@
-package com.sarojini.MyGardenCare.dtos;
+package com.MyGardenCare.dtos;
+import com.MyGardenCare.enums.PlantContainer;
+import com.MyGardenCare.enums.PlantLocation;
+import com.MyGardenCare.enums.PotSize;
 import com.sarojini.MyGardenCare.enums.*;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data

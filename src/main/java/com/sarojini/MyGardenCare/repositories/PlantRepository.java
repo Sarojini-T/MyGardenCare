@@ -1,5 +1,5 @@
-package com.sarojini.MyGardenCare.repositories;
-import com.sarojini.MyGardenCare.entities.Plant;
+package com.MyGardenCare.repositories;
+import com.MyGardenCare.entities.Plant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -1,4 +1,4 @@
-package com.sarojini.MyGardenCare.controllers;
+package com.MyGardenCare.controllers;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
 
