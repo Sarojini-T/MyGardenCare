@@ -10,7 +10,6 @@ public class UserPlantUpdateRequest {
     private String plantName;
     private PlantContainer plantContainer;
     private PlantLocation plantLocation;
-    private PotSize potSize;
+    private ContainerSize containerSize;
     private Boolean hasDrainage;
-    private String soilType;
 }

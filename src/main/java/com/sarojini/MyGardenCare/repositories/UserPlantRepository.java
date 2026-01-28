@@ -10,9 +10,10 @@ import java.util.Optional;
 public interface UserPlantRepository extends JpaRepository<UserPlant, Long> {
     List<UserPlant> findByUser(User user);
     Optional<UserPlant> findByIdAndUser(Long id, User user);
-    List<UserPlant> findByUserAndPlantIn(User user, List<Plant> plantList);
+    List<UserPlant> findByUserAndPlantId(User user, Long id);
+
+    Boolean existsByUserAndNicknameIgnoreCase(User user, String nickname);
 
     void deleteByUser(User user);
-    void deleteByUserAndPlantIn(User user, List<Plant> plant);
     void deleteByUserAndId(User user, Long id);
 }

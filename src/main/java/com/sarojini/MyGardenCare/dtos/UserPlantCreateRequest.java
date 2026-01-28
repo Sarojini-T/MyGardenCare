@@ -18,7 +18,6 @@ public class UserPlantCreateRequest {
     @NotNull(message = "Plant location cannot be null")
     private PlantLocation plantLocation;
 
-    private PotSize potSize;
+    private ContainerSize containerSize;
     private Boolean hasDrainage;
-    private String soilType;
 }

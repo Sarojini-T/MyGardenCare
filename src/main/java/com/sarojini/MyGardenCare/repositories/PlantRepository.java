@@ -13,6 +13,7 @@ public interface PlantRepository extends JpaRepository<Plant, Long> {
     OR LOWER(p.alternateNames) LIKE LOWER(CONCAT('%', :query, '%'))
     """)
     List<Plant> searchByAnyName(@Param("query") String query);
+    Optional<Plant> findByCommonName(String commonName);
     Boolean existsByScientificNameIgnoreCase(String scientificName);
 }
 

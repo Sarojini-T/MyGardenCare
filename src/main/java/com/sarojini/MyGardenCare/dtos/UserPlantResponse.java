@@ -9,8 +9,7 @@ public class UserPlantResponse {
     private String plantName;
     private String nickname;
     private PlantContainer plantContainer;
-    private PotSize potSize;
+    private ContainerSize containerSize;
     private Boolean hasDrainage;
-    private String soilType;
     private PlantLocation plantLocation;
 }
