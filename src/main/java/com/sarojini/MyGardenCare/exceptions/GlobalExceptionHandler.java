@@ -1,6 +1,7 @@
 package com.sarojini.MyGardenCare.exceptions;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -49,5 +50,15 @@ public class GlobalExceptionHandler {
         log.error("Something went wrong: {}", ex.getMessage(), ex);
 
         return Map.of("message", "An unexpected error occurred");
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handleConstraintValidation(ConstraintViolationException ex){
+        Map<String, String> errors = new HashMap<>();
+
+        ex.getConstraintViolations().forEach(violation ->
+                errors.put(violation.getPropertyPath().toString(), violation.getMessage()));
+        return Map.of("message", "Validation failed", "errors", errors);
     }
 }
