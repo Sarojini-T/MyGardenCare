@@ -1,6 +1,6 @@
 package com.sarojini.MyGardenCare.enums;
 
-public enum PotSize {
+public enum ContainerSize {
     SMALL,
     MEDIUM,
     LARGE

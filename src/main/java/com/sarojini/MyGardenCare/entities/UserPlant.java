@@ -42,14 +42,11 @@ public class UserPlant {
     private PlantLocation plantLocation;
 
     @Enumerated(EnumType.STRING)
-    @Column(name =  "pot_size")
-    private PotSize potSize;
+    @Column(name =  "container_size")
+    private ContainerSize containerSize;
 
     @Column(name = "has_drainage")
     private Boolean hasDrainage;
-
-    @Column(name = "soil_type")
-    private String soilType;
 
     @CreationTimestamp
     private Instant createdAt;
