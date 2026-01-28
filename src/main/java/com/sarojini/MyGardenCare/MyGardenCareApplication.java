@@ -1,4 +1,4 @@
-package com.MyGardenCare;
+package com.sarojini.MyGardenCare;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

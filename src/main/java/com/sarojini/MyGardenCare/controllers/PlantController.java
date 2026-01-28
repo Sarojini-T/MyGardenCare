@@ -1,7 +1,7 @@
-package com.MyGardenCare.controllers;
-import com.MyGardenCare.dtos.PlantApiDto;
-import com.MyGardenCare.dtos.PlantResponse;
-import com.MyGardenCare.services.PlantService;
+package com.sarojini.MyGardenCare.controllers;
+import com.sarojini.MyGardenCare.dtos.PlantApiDto;
+import com.sarojini.MyGardenCare.dtos.PlantResponse;
+import com.sarojini.MyGardenCare.services.PlantService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -22,21 +22,18 @@ public class PlantController {
         this.plantService = plantService;
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<PlantResponse> getPlantById(@PathVariable Long id){
         PlantResponse plantById = plantService.getPlantById(id);
         return ResponseEntity.ok(plantById);
     }
 
-    @GetMapping("/search")
+    @GetMapping
     public ResponseEntity<List<PlantResponse>> searchByAnyName(@RequestParam(name = "query", required = true)
     @NotBlank(message = "Search query cannot be empty")
     @Size(min = 3, message = "Search query must be at least 2 characters")String query) {
         List<PlantResponse> plantResponseList = plantService.searchPlantByAnyName(query);
 
-        if(plantResponseList.isEmpty()){
-            return ResponseEntity.notFound().build();
-        }
         return ResponseEntity.ok(plantResponseList);
     }
 

@@ -1,4 +1,4 @@
-package com.MyGardenCare.enums;
+package com.sarojini.MyGardenCare.enums;
 
 public enum PlantContainer {
     POT,

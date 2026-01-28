@@ -1,4 +1,4 @@
-package com.MyGardenCare.dtos;
+package com.sarojini.MyGardenCare.dtos;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

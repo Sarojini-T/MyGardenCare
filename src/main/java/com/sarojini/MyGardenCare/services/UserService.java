@@ -4,10 +4,12 @@ import com.sarojini.MyGardenCare.dtos.UserCreateRequest;
 import com.sarojini.MyGardenCare.dtos.UserResponse;
 import com.sarojini.MyGardenCare.dtos.UserUpdateRequest;
 import com.sarojini.MyGardenCare.entities.User;
+import com.sarojini.MyGardenCare.exceptions.ConflictException;
 import com.sarojini.MyGardenCare.repositories.UserRepository;
-import org.springframework.http.HttpStatus;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
@@ -26,16 +28,16 @@ public class UserService {
 
     public UserResponse getUserByUsername(String username){
         Optional<User> userByUsernameOptional = userRepository.findByUsernameIgnoreCase(username);
-        if(userByUsernameOptional.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User " + username + " not found.");
+        if(userByUsernameOptional.isEmpty()) throw new EntityNotFoundException("User " + username + " not found");
         return mapUserToUserResponse(userByUsernameOptional.get());
     }
 
     public UserResponse createNewUser(UserCreateRequest userCreateReq){
         if (userRepository.existsByUsernameIgnoreCase(userCreateReq.getUsername())) {
-            throw new RuntimeException("Username already taken");
+            throw new ConflictException("Username already taken");
         }
         if(userRepository.existsByEmailIgnoreCase(userCreateReq.getEmail())){
-            throw new RuntimeException("Email already taken");
+            throw new ConflictException("Email already taken");
         }
 
         User newUser = mapUserCreateReqToUser(userCreateReq);
@@ -43,6 +45,7 @@ public class UserService {
         return mapUserToUserResponse(savedUser);
     }
 
+    @Transactional
     public UserResponse updateUserById(Long id, UserUpdateRequest userUpdateReq){
         User userToUpdate = getUserByIdHelper(id);
 
@@ -51,15 +54,15 @@ public class UserService {
         String reqPassword = userUpdateReq.getPassword();
         String reqZipcode = userUpdateReq.getZipcode();
 
-        if(reqUsername != null && !userToUpdate.getUsername().equals(reqUsername)){
-            if (userRepository.existsByUsernameIgnoreCase(reqUsername)) throw new RuntimeException("Username already taken");
+        if(StringUtils.hasText(reqUsername) && !userToUpdate.getUsername().equals(reqUsername)){
+            if (userRepository.existsByUsernameIgnoreCase(reqUsername)) throw new ConflictException("Username already taken");
             userToUpdate.updateUsername(reqUsername);
         }
-        if(reqEmail != null){
-            if(userRepository.existsByEmailIgnoreCase(reqEmail)) throw new RuntimeException("Email exists already");
+        if(StringUtils.hasText(reqEmail)){
+            if(userRepository.existsByEmailIgnoreCase(reqEmail)) throw new ConflictException("Email exists already");
             userToUpdate.updateEmail(reqEmail);
         }
-        if(reqPassword != null){
+        if(StringUtils.hasText(reqPassword)){
             userToUpdate.updatePassword(reqPassword);
         }
         if(reqZipcode != null){
@@ -67,12 +70,19 @@ public class UserService {
             else userToUpdate.updateZipCode(reqZipcode);
         }
 
-        User updatedUser = userRepository.save(userToUpdate);
-        return mapUserToUserResponse(updatedUser);
+        return mapUserToUserResponse(userToUpdate);
     }
 
     public void deleteById(Long id){
-        userRepository.deleteById(id);
+        User userToDelete = getUserByIdHelper(id);
+
+        userRepository.delete(userToDelete);
+    }
+
+    public User getUserByIdHelper(Long id){
+        Optional<User> userByIdOptional = userRepository.findById(id);
+        if(userByIdOptional.isEmpty()) throw new EntityNotFoundException("User " + id + " not found.");
+        return userByIdOptional.get();
     }
 
     public UserResponse mapUserToUserResponse(User user){
@@ -81,7 +91,7 @@ public class UserService {
         String email = user.getEmail();
         String zipcode = user.getZipcode();
 
-        return  new UserResponse(id, username, email, zipcode);
+        return new UserResponse(id, username, email, zipcode);
     }
 
     public User mapUserCreateReqToUser(UserCreateRequest userCreateReq){
@@ -93,11 +103,5 @@ public class UserService {
         User newUser = new User(username, email, password);
         if(zipcode != null) newUser.updateZipCode(zipcode);
         return newUser;
-    }
-
-    public User getUserByIdHelper(Long id){
-        Optional<User> userByIdOptional = userRepository.findById(id);
-        if(userByIdOptional.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User " + id + " not found.");
-        return userByIdOptional.get();
     }
 }

@@ -1,8 +1,9 @@
-package com.MyGardenCare.controllers;
-import com.MyGardenCare.dtos.UserPlantCreateRequest;
-import com.MyGardenCare.dtos.UserPlantResponse;
-import com.MyGardenCare.dtos.UserPlantUpdateRequest;
-import com.MyGardenCare.services.UserPlantService;
+package com.sarojini.MyGardenCare.controllers;
+import com.sarojini.MyGardenCare.dtos.UserPlantCreateRequest;
+import com.sarojini.MyGardenCare.dtos.UserPlantResponse;
+import com.sarojini.MyGardenCare.dtos.UserPlantUpdateRequest;
+import com.sarojini.MyGardenCare.dtos.UserUpdateRequest;
+import com.sarojini.MyGardenCare.services.UserPlantService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class UserPlantController {
         return ResponseEntity.ok(userPlants);
     }
 
-    @GetMapping("/search")
+    @GetMapping("/by-plant-name")
     public ResponseEntity<List<UserPlantResponse>> getAllUserPlantsByPlantName(@PathVariable String username, @RequestParam("plant-name") String plantName){
        List<UserPlantResponse> userPlantsByPlantName = userPlantService.getAllUserPlantsByPlantName(username, plantName);
        return ResponseEntity.ok(userPlantsByPlantName);
@@ -55,12 +56,6 @@ public class UserPlantController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUserPlantById(@PathVariable String username, @PathVariable Long id){
         userPlantService.deleteUserPlantById(username, id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/by-plant-name")
-    public ResponseEntity<Void> deleteUserPlantsByName(@PathVariable String username, @RequestParam("plant-name") String plantName){
-        userPlantService.deleteUserPlantsByName(username, plantName);
         return ResponseEntity.noContent().build();
     }
 

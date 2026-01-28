@@ -1,9 +1,10 @@
-package com.MyGardenCare.repositories;
-import com.MyGardenCare.entities.Plant;
+package com.sarojini.MyGardenCare.repositories;
+import com.sarojini.MyGardenCare.entities.Plant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.util.List;
+import java.util.Optional;
 
 public interface PlantRepository extends JpaRepository<Plant, Long> {
     @Query("""

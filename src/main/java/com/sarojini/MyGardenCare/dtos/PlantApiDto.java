@@ -1,4 +1,4 @@
-package com.MyGardenCare.dtos;
+package com.sarojini.MyGardenCare.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;

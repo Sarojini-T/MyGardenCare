@@ -36,10 +36,10 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
    }
 
-   @PutMapping("/{id}")
+   @PatchMapping("/{id}")
    public ResponseEntity<UserResponse> updateUserById(@PathVariable Long id,
                                                       @Valid @RequestBody UserUpdateRequest userUpdateReq){
-       UserResponse updatedUserById =  userService.updateUserById(id, userUpdateReq);
+        UserResponse updatedUserById =  userService.updateUserById(id, userUpdateReq);
         return ResponseEntity.ok(updatedUserById);
    }
 

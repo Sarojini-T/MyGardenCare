@@ -1,13 +1,13 @@
-package com.MyGardenCare.services;
+package com.sarojini.MyGardenCare.services;
 
-import com.MyGardenCare.dtos.PlantApiDto;
-import com.MyGardenCare.dtos.PlantResponse;
-import com.MyGardenCare.entities.Plant;
-import com.MyGardenCare.repositories.PlantRepository;
-import org.springframework.http.HttpStatus;
+import com.sarojini.MyGardenCare.dtos.PlantApiDto;
+import com.sarojini.MyGardenCare.dtos.PlantResponse;
+import com.sarojini.MyGardenCare.entities.Plant;
+import com.sarojini.MyGardenCare.exceptions.ConflictException;
+import com.sarojini.MyGardenCare.repositories.PlantRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,12 +23,14 @@ public class PlantService {
 
     public PlantResponse getPlantById(Long id){
         Optional<Plant> plantByIdOptional = plantRepository.findById(id);
-        if(!plantByIdOptional.isPresent()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Plant " + id + " not found");
+        if(plantByIdOptional.isEmpty()) throw new EntityNotFoundException("Plant " + id + " not found");
         return mapPlantToPlantResponse(plantByIdOptional.get());
     }
 
     public List<PlantResponse> searchPlantByAnyName(String query){
         List<Plant> plants = plantRepository.searchByAnyName(query);
+
+        if(plants.isEmpty()) throw new EntityNotFoundException(query + " not found");
 
         List<PlantResponse> plantResponseList = new ArrayList<>();
 
@@ -41,7 +43,7 @@ public class PlantService {
 
     public PlantResponse addPlant(PlantApiDto plantApiDto){
         if(plantRepository.existsByScientificNameIgnoreCase(plantApiDto.getScientificName())){
-            throw new ResponseStatusException(HttpStatus.CONFLICT, plantApiDto.getScientificName() + " already exists");
+            throw new ConflictException(plantApiDto.getScientificName() + " already exists");
         }
 
         Plant newPlant = mapPlantApiDtoToPlant(plantApiDto);
