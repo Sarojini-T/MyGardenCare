@@ -5,12 +5,14 @@ import com.sarojini.MyGardenCare.dtos.UserUpdateRequest;
 import com.sarojini.MyGardenCare.services.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
 
 @RestController
 @RequestMapping("/api/v1/users")
+@Validated
 public class UserController {
     private final UserService userService;
 

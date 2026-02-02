@@ -33,12 +33,9 @@ public class UserService {
     }
 
     public UserResponse createNewUser(UserCreateRequest userCreateReq){
-        if (userRepository.existsByUsernameIgnoreCase(userCreateReq.getUsername())) {
-            throw new ConflictException("Username already taken");
-        }
-        if(userRepository.existsByEmailIgnoreCase(userCreateReq.getEmail())){
-            throw new ConflictException("Email already taken");
-        }
+        String username = userCreateReq.getUsername().trim();
+        String email = userCreateReq.getEmail().trim();
+        validateUsernameAndEmail(username, email, null);
 
         User newUser = mapUserCreateReqToUser(userCreateReq);
         User savedUser = userRepository.save(newUser);
@@ -49,26 +46,14 @@ public class UserService {
     public UserResponse updateUserById(Long id, UserUpdateRequest userUpdateReq){
         User userToUpdate = getUserByIdHelper(id);
 
-        String reqUsername = userUpdateReq.getUsername();
-        String reqEmail = userUpdateReq.getEmail();
-        String reqPassword = userUpdateReq.getPassword();
-        String reqZipcode = userUpdateReq.getZipcode();
+        String normalizedUsername = StringUtils.hasText(userUpdateReq.getUsername()) ? userUpdateReq.getUsername().trim() : null;
+        String normalizedEmail = StringUtils.hasText(userUpdateReq.getEmail()) ? userUpdateReq.getEmail().trim() : null;
+        String normalizedPassword = StringUtils.hasText(userUpdateReq.getPassword()) ? userUpdateReq.getPassword().trim() : null;
+        String normalizedZipcode = StringUtils.hasText(userUpdateReq.getZipcode()) ? userUpdateReq.getZipcode().trim() : null;
 
-        if(StringUtils.hasText(reqUsername) && !userToUpdate.getUsername().equals(reqUsername)){
-            if (userRepository.existsByUsernameIgnoreCase(reqUsername)) throw new ConflictException("Username already taken");
-            userToUpdate.updateUsername(reqUsername);
-        }
-        if(StringUtils.hasText(reqEmail)){
-            if(userRepository.existsByEmailIgnoreCase(reqEmail)) throw new ConflictException("Email exists already");
-            userToUpdate.updateEmail(reqEmail);
-        }
-        if(StringUtils.hasText(reqPassword)){
-            userToUpdate.updatePassword(reqPassword);
-        }
-        if(reqZipcode != null){
-            if(reqZipcode.isBlank()) userToUpdate.deleteZipcode();
-            else userToUpdate.updateZipCode(reqZipcode);
-        }
+        validateUsernameAndEmail(normalizedUsername, normalizedEmail, userToUpdate);
+
+        applyPatchUpdate(normalizedUsername, normalizedEmail, normalizedPassword, normalizedZipcode, userToUpdate);
 
         return mapUserToUserResponse(userToUpdate);
     }
@@ -79,13 +64,15 @@ public class UserService {
         userRepository.delete(userToDelete);
     }
 
-    public User getUserByIdHelper(Long id){
+    private User getUserByIdHelper(Long id){
         Optional<User> userByIdOptional = userRepository.findById(id);
         if(userByIdOptional.isEmpty()) throw new EntityNotFoundException("User " + id + " not found.");
         return userByIdOptional.get();
     }
 
-    public UserResponse mapUserToUserResponse(User user){
+
+
+    private UserResponse mapUserToUserResponse(User user){
         Long id = user.getId();
         String username = user.getUsername();
         String email = user.getEmail();
@@ -94,7 +81,7 @@ public class UserService {
         return new UserResponse(id, username, email, zipcode);
     }
 
-    public User mapUserCreateReqToUser(UserCreateRequest userCreateReq){
+    private User mapUserCreateReqToUser(UserCreateRequest userCreateReq){
         String username = userCreateReq.getUsername();
         String email = userCreateReq.getEmail();
         String password = userCreateReq.getPassword();
@@ -103,5 +90,42 @@ public class UserService {
         User newUser = new User(username, email, password);
         if(zipcode != null) newUser.updateZipCode(zipcode);
         return newUser;
+    }
+
+    private void validateUsernameAndEmail(String username, String email, User... userToUpdate){
+        if (username != null) {
+            Optional<User> userByUsernameOptional = userRepository.findByUsernameIgnoreCase(username);
+
+            if(userByUsernameOptional.isPresent()){
+                User userByUsername = userByUsernameOptional.get();
+                if(userToUpdate == null || !userToUpdate[0].getId().equals(userByUsername.getId())){
+                    throw new ConflictException("Username already taken");
+                }
+            }
+        }
+
+        if(email != null) {
+            Optional<User> userByEmailOptional = userRepository.findByEmailIgnoreCase(email);
+            if(userByEmailOptional.isPresent()){
+                User userByEmail = userByEmailOptional.get();
+                if(userToUpdate != null || !userToUpdate[0].getId().equals(userByEmail.getId())){
+                    throw new ConflictException("Email exists already");
+                }
+            }
+        }
+    }
+
+    private void applyPatchUpdate(String username,
+                                  String email,
+                                  String password,
+                                  String zipcode,
+                                  User userToUpdate){
+        if(username != null) userToUpdate.updateUsername(username);
+        if(email != null) userToUpdate.updateEmail(email);
+        if(password != null) userToUpdate.updatePassword(password);
+        if(zipcode != null){
+            if(zipcode.isBlank()) userToUpdate.deleteZipcode();
+            else userToUpdate.updateZipCode(zipcode);
+        }
     }
 }
