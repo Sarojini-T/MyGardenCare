@@ -37,6 +37,8 @@ public class UserService {
         String email = userCreateReq.getEmail().trim();
         validateUsernameAndEmail(username, email, null);
 
+        userCreateReq.setUsername(username);
+        userCreateReq.setEmail(email);
         User newUser = mapUserCreateReqToUser(userCreateReq);
         User savedUser = userRepository.save(newUser);
         return mapUserToUserResponse(savedUser);
@@ -49,7 +51,7 @@ public class UserService {
         String normalizedUsername = StringUtils.hasText(userUpdateReq.getUsername()) ? userUpdateReq.getUsername().trim() : null;
         String normalizedEmail = StringUtils.hasText(userUpdateReq.getEmail()) ? userUpdateReq.getEmail().trim() : null;
         String normalizedPassword = StringUtils.hasText(userUpdateReq.getPassword()) ? userUpdateReq.getPassword().trim() : null;
-        String normalizedZipcode = StringUtils.hasText(userUpdateReq.getZipcode()) ? userUpdateReq.getZipcode().trim() : null;
+        String normalizedZipcode = userUpdateReq.getZipcode() != null ? userUpdateReq.getZipcode().trim() : null;
 
         validateUsernameAndEmail(normalizedUsername, normalizedEmail, userToUpdate);
 
