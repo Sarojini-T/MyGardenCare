@@ -8,6 +8,7 @@ import com.sarojini.MyGardenCare.exceptions.ConflictException;
 import com.sarojini.MyGardenCare.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -16,9 +17,12 @@ import java.util.Optional;
 @Service
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public UserResponse getUserById(Long id){
@@ -36,6 +40,9 @@ public class UserService {
         String username = userCreateReq.getUsername().trim();
         String email = userCreateReq.getEmail().trim();
         validateUsernameAndEmail(username, email, null);
+
+        String encodedPassword = passwordEncoder.encode(userCreateReq.getPassword());
+        userCreateReq.setPassword((encodedPassword));
 
         User newUser = mapUserCreateReqToUser(userCreateReq);
         User savedUser = userRepository.save(newUser);
