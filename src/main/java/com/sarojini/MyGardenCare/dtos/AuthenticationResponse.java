@@ -1,4 +1,4 @@
-package com.sarojini.MyGardenCare.security;
+package com.sarojini.MyGardenCare.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
