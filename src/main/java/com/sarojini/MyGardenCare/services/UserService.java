@@ -8,6 +8,7 @@ import com.sarojini.MyGardenCare.exceptions.ConflictException;
 import com.sarojini.MyGardenCare.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -15,15 +16,10 @@ import org.springframework.util.StringUtils;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
-    public UserService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
 
     public UserResponse getUserById(Long id){
         User userById = getUserByIdHelper(id);
@@ -40,9 +36,6 @@ public class UserService {
         String username = userCreateReq.getUsername().trim();
         String email = userCreateReq.getEmail().trim();
         validateUsernameAndEmail(username, email, null);
-
-        String encodedPassword = passwordEncoder.encode(userCreateReq.getPassword());
-        userCreateReq.setPassword((encodedPassword));
 
         User newUser = mapUserCreateReqToUser(userCreateReq);
         User savedUser = userRepository.save(newUser);
@@ -91,10 +84,10 @@ public class UserService {
     private User mapUserCreateReqToUser(UserCreateRequest userCreateReq){
         String username = userCreateReq.getUsername();
         String email = userCreateReq.getEmail();
-        String password = userCreateReq.getPassword();
+        String encodedPassword = passwordEncoder.encode(userCreateReq.getPassword());
         String zipcode = userCreateReq.getZipcode();
 
-        User newUser = new User(username, email, password);
+        User newUser = new User(username, email, encodedPassword);
         if(zipcode != null) newUser.updateZipCode(zipcode);
         return newUser;
     }
@@ -129,7 +122,7 @@ public class UserService {
                                   User userToUpdate){
         if(username != null) userToUpdate.updateUsername(username);
         if(email != null) userToUpdate.updateEmail(email);
-        if(password != null) userToUpdate.updatePassword(password);
+        if(password != null) userToUpdate.updatePassword(passwordEncoder.encode(password));
         if(zipcode != null){
             if(zipcode.isBlank()) userToUpdate.deleteZipcode();
             else userToUpdate.updateZipCode(zipcode);
