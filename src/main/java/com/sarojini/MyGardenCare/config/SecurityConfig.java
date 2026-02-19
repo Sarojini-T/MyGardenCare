@@ -1,6 +1,5 @@
 package com.sarojini.MyGardenCare.config;
 
-import com.sarojini.MyGardenCare.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

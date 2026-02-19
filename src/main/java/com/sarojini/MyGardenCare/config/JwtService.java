@@ -1,4 +1,4 @@
-package com.sarojini.MyGardenCare.security;
+package com.sarojini.MyGardenCare.config;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

@@ -1,4 +1,4 @@
-package com.sarojini.MyGardenCare.security;
+package com.sarojini.MyGardenCare.config;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
