@@ -1,14 +1,17 @@
 package com.sarojini.MyGardenCare.exceptions;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.security.SignatureException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -50,6 +53,30 @@ public class GlobalExceptionHandler {
         log.error("Something went wrong: {}", ex.getMessage(), ex);
 
         return Map.of("message", "An unexpected error occurred");
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Map<String, Object> handleBadCredentials(BadCredentialsException ex){
+        return Map.of("message", "Authentication failed", "errors", "Invalid username or password");
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Map<String, Object> handleExpiredJwt(ExpiredJwtException ex) {
+        return Map.of(
+                "message", "Session expired",
+                "errors", "Your token has expired. Please log in again."
+        );
+    }
+
+    @ExceptionHandler(SignatureException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Map<String, Object> handleInvalidSignature(SignatureException ex) {
+        return Map.of(
+                "message", "Invalid token",
+                "errors", "The token signature is invalid."
+        );
     }
 
     @ExceptionHandler(ConstraintViolationException.class)

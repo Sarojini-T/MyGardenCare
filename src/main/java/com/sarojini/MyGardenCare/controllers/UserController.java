@@ -20,12 +20,6 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id){
-        UserResponse userById = userService.getUserById(id);
-        return ResponseEntity.ok(userById);
-    }
-
     @GetMapping
     public ResponseEntity<UserResponse> getUserByUsername(@RequestParam("username") String username){
         UserResponse userByUsername = userService.getUserByUsername(username);

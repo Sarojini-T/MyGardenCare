@@ -1,25 +1,26 @@
 package com.sarojini.MyGardenCare.services;
 
+import com.sarojini.MyGardenCare.services.externalAPI.ExternalPlantApiService;
 import com.sarojini.MyGardenCare.dtos.PlantApiDto;
 import com.sarojini.MyGardenCare.dtos.PlantResponse;
 import com.sarojini.MyGardenCare.entities.Plant;
 import com.sarojini.MyGardenCare.exceptions.ConflictException;
 import com.sarojini.MyGardenCare.repositories.PlantRepository;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class PlantService {
     private final PlantRepository plantRepository;
-
-    public PlantService(PlantRepository plantRepository){
-        this.plantRepository = plantRepository;
-    }
+    private final ExternalPlantApiService externalPlantApiService;
 
     public PlantResponse getPlantById(Long id){
         Optional<Plant> plantByIdOptional = plantRepository.findById(id);
@@ -27,18 +28,42 @@ public class PlantService {
         return mapPlantToPlantResponse(plantByIdOptional.get());
     }
 
-    public List<PlantResponse> searchPlantByAnyName(String query){
-        List<Plant> plants = plantRepository.searchByAnyName(query);
+    public PlantResponse getPlantByName(String query){
+        List<Plant> localPlants = plantRepository.searchByAnyName(query);
 
-        if(plants.isEmpty()) throw new EntityNotFoundException(query + " not found");
+        if(!localPlants.isEmpty()){
+            return  mapPlantToPlantResponse((localPlants.get(0)));
 
-        List<PlantResponse> plantResponseList = new ArrayList<>();
-
-        for(Plant plant : plants){
-            plantResponseList.add(mapPlantToPlantResponse(plant));
         }
 
-        return plantResponseList;
+        List<PlantApiDto> externalApiPlants = externalPlantApiService.searchExternalPlantApi(query);
+
+        if(externalApiPlants.isEmpty()){
+            throw new EntityNotFoundException("Plant " + query + " not found in database or external sources");
+        }
+
+        PlantApiDto validPlantFromApi = null;
+
+        for(PlantApiDto currPlant : externalApiPlants){
+            if(StringUtils.hasText(currPlant.getScientificName()) &&  StringUtils.hasText(currPlant.getCommonName())){
+                validPlantFromApi  = currPlant;
+                break;
+            }
+        }
+
+        if(validPlantFromApi == null){
+            log.warn("Api returned invalid results for {}", query);
+            throw new EntityNotFoundException(("API returned incomplete data for " + query + "."));
+        }
+
+        Optional<Plant> plantFromDb = plantRepository.findByScientificNameIgnoreCase(validPlantFromApi.getScientificName());
+        if(plantFromDb.isPresent()){
+            return mapPlantToPlantResponse(plantFromDb.get());
+        }else{
+            Plant newPlant = mapPlantApiDtoToPlant(validPlantFromApi);
+            Plant savedPlant = plantRepository.save(newPlant);
+            return mapPlantToPlantResponse(savedPlant);
+        }
     }
 
     public PlantResponse addPlant(PlantApiDto plantApiDto){
@@ -51,7 +76,7 @@ public class PlantService {
         return mapPlantToPlantResponse(savedPlant);
     }
 
-    public PlantResponse mapPlantToPlantResponse(Plant plant){
+    public static PlantResponse mapPlantToPlantResponse(Plant plant){
         PlantResponse newPlantResponse =  new PlantResponse();
 
         newPlantResponse.setId(plant.getId());

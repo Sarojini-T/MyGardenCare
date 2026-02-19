@@ -14,6 +14,7 @@ public interface PlantRepository extends JpaRepository<Plant, Long> {
     """)
     List<Plant> searchByAnyName(@Param("query") String query);
     Optional<Plant> findByCommonName(String commonName);
+    Optional<Plant> findByScientificNameIgnoreCase(String scientificName);
     Boolean existsByScientificNameIgnoreCase(String scientificName);
 }
 

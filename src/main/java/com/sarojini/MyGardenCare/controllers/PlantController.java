@@ -29,12 +29,12 @@ public class PlantController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PlantResponse>> searchByAnyName(@RequestParam(name = "query", required = true)
+    public ResponseEntity<PlantResponse> getPlantByName(@RequestParam(name = "query", required = true)
     @NotBlank(message = "Search query cannot be empty")
     @Size(min = 3, message = "Search query must be at least 2 characters")String query) {
-        List<PlantResponse> plantResponseList = plantService.searchPlantByAnyName(query);
+        PlantResponse plantResponse = plantService.getPlantByName(query);
 
-        return ResponseEntity.ok(plantResponseList);
+        return ResponseEntity.ok(plantResponse);
     }
 
     @PostMapping
