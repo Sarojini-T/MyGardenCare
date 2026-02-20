@@ -153,7 +153,6 @@ public class UserServiceTest {
     public void updateUserById_Success(){
         User existingUser = new User("user01", "user01@gmail.com", "123");
         existingUser.updateZipCode("12345");
-        ReflectionTestUtils.setField(existingUser, "id", 1L);
 
         when(passwordEncoder.encode("abc")).thenReturn("encodedAbc");
         when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
