@@ -57,6 +57,8 @@ public class UserService {
 
         applyPatchUpdate(normalizedUsername, normalizedEmail, normalizedPassword, normalizedZipcode, userToUpdate);
 
+        userRepository.save(userToUpdate);
+
         return mapUserToUserResponse(userToUpdate);
     }
 
