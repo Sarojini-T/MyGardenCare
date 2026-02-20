@@ -15,6 +15,7 @@ import com.sarojini.MyGardenCare.repositories.UserPlantRepository;
 import com.sarojini.MyGardenCare.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.sarojini.MyGardenCare.enums.*;
 
@@ -24,57 +25,37 @@ import java.util.Optional;
 
 
 @Service
+@RequiredArgsConstructor
 public class UserPlantService {
     private final UserPlantRepository userPlantRepository;
     private final UserRepository userRepository;
     private final PlantRepository plantRepository;
 
-    public UserPlantService(UserPlantRepository userPlantRepository,
-                            UserRepository userRepository,
-                            PlantRepository plantRepository){
-        this.userPlantRepository = userPlantRepository;
-        this.userRepository = userRepository;
-        this.plantRepository = plantRepository;
-    }
-
-    public List<UserPlantResponse> getAllUserPlants(String username){
-        User user = getUser(username);
-
+    public List<UserPlantResponse> getAllUserPlants(User user){
         List<UserPlant> userPlants = userPlantRepository.findByUser(user);
-
         return userPlantListToResponse(userPlants);
     }
 
-    public List<UserPlantResponse> getAllUserPlantsByPlantName(String username, String plantName){
-        User user = getUser(username);
-
+    public List<UserPlantResponse> getAllUserPlantsByPlantName(User user, String plantName){
         Plant plant = getPlantByPlantName(plantName);
-
-        Long plantId = plant.getId();
-
-        List<UserPlant> userPlants = userPlantRepository.findByUserAndPlantId(user, plantId);
+        List<UserPlant> userPlants = userPlantRepository.findByUserAndPlantId(user, plant.getId());
 
         return userPlantListToResponse(userPlants);
     }
 
 
-    public UserPlantResponse getUserPlantById(Long id, String username){
-        User user = getUser(username);
-
+    public UserPlantResponse getUserPlantById(Long id, User user){
         UserPlant userPlantById = getUserPlantByIdAndUser(id, user);
-
         return mapUserPlantToResponseDto(userPlantById);
     }
 
 
-    public UserPlantResponse createUserPlant(String username, UserPlantCreateRequest createReq){
+    public UserPlantResponse createUserPlant(User user, UserPlantCreateRequest createReq){
         String nickname = createReq.getNickname();
         PlantContainer plantContainer = createReq.getPlantContainer();
         PlantLocation plantLocation = createReq.getPlantLocation();
         ContainerSize containerSize = createReq.getContainerSize();
         Boolean hasDrainage = createReq.getHasDrainage();
-
-        User user = getUser(username);
 
         UserPlant newUserPlant = mapCreateReqDtoToUserPlant(user, createReq);
 
@@ -87,9 +68,7 @@ public class UserPlantService {
     }
 
     @Transactional
-    public UserPlantResponse updateUserPlantById(String username, Long id, UserPlantUpdateRequest updateReq){
-        User user = getUser(username);
-
+    public UserPlantResponse updateUserPlantById(User user, Long id, UserPlantUpdateRequest updateReq){
         UserPlant userPlantToUpdate =  getUserPlantByIdAndUser(id, user);
 
         PlantContainer plantContainer = updateReq.getPlantContainer() != null ? updateReq.getPlantContainer() : userPlantToUpdate.getPlantContainer();
@@ -114,22 +93,14 @@ public class UserPlantService {
         return mapUserPlantToResponseDto(userPlantToUpdate);
     }
 
-    public void deleteUserPlantById(String username , Long id){
-        User user = getUser(username);
+    public void deleteUserPlantById(User user, Long id){
         userPlantRepository.deleteByUserAndId(user, id);
     }
 
 
     @Transactional
-    public void deleteAllUserPlants(String username){
-        User user = getUser(username);
+    public void deleteAllUserPlants(User user){
         userPlantRepository.deleteByUser(user);
-    }
-
-    private User getUser(String username){
-        Optional<User> userOptional = userRepository.findByUsernameIgnoreCase(username);
-        if(userOptional.isEmpty()) throw new EntityNotFoundException("User " + username + " not found");
-        return userOptional.get();
     }
 
     private Plant getPlantById(Long id){
