@@ -10,9 +10,12 @@ import com.sarojini.MyGardenCare.services.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Optional;
@@ -25,8 +28,14 @@ public class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
     @InjectMocks
     private UserService userService;
+
+    @Captor
+    private ArgumentCaptor<User> userArgumentCaptor;
 
     @Test
     public void getUserById_Success(){
@@ -81,15 +90,21 @@ public class UserServiceTest {
         createReq.setPassword("123");
         createReq.setZipcode("12345");
 
+        when(passwordEncoder.encode("123")).thenReturn("encoded123");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         UserResponse userResponse = userService.createNewUser(createReq);
+
+        verify(userRepository).save(userArgumentCaptor.capture());
+        User capturedUser = userArgumentCaptor.getValue();
 
         assertNotNull(userResponse);
         assertEquals("user01", userResponse.getUsername());
         assertEquals("user01@gmail.com", userResponse.getEmail());
         assertEquals("12345", userResponse.getZipcode());
-        verify(userRepository, times(1)).save(any(User.class));
+        assertEquals("encoded123", capturedUser.getPassword());
+
+        verify(passwordEncoder, times(1)).encode("123");
     }
 
     @Test
@@ -100,6 +115,7 @@ public class UserServiceTest {
         createReq.setPassword("123");
         createReq.setZipcode("12345");
 
+        when(passwordEncoder.encode("123")).thenReturn("encoded123");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         UserResponse userResponse = userService.createNewUser(createReq);
@@ -109,6 +125,7 @@ public class UserServiceTest {
         assertEquals("user01@gmail.com", userResponse.getEmail());
 
         verify(userRepository, times(1)).save(any(User.class));
+        verify(passwordEncoder, times(1)).encode("123");
     }
 
     @Test
@@ -138,23 +155,32 @@ public class UserServiceTest {
         existingUser.updateZipCode("12345");
         ReflectionTestUtils.setField(existingUser, "id", 1L);
 
+        when(passwordEncoder.encode("abc")).thenReturn("encodedAbc");
         when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 
         UserUpdateRequest updateReq = new UserUpdateRequest();
         updateReq.setUsername("user02");
         updateReq.setEmail(" ");
+        updateReq.setPassword("abc");
         updateReq.setZipcode("");
 
         UserResponse updatedUser = userService.updateUserById(1L, updateReq);
 
+        verify(userRepository).save(userArgumentCaptor.capture());
+        User capturedUser = userArgumentCaptor.getValue();
+
         assertEquals("user02", updatedUser.getUsername());
         assertEquals("user01@gmail.com", updatedUser.getEmail());
+        assertEquals("encodedAbc", capturedUser.getPassword());
         assertNull(updatedUser.getZipcode());
+
+        verify(passwordEncoder, times(1)).encode("abc");
+        verify(userRepository, times(1)).findById(1L);
     }
 
     @Test
     public void updateUserById_Success_WhenUsernameOrEmailIsSameAsCurrent(){
-        User existingUser = new User("user01", "user01@gmail.com", "abc");
+        User existingUser = new User("user01", "user01@gmail.com", "123");
         ReflectionTestUtils.setField(existingUser, "id", 1L);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
@@ -167,6 +193,8 @@ public class UserServiceTest {
 
         assertEquals("user01", userResponse.getUsername());
         assertEquals("user01@gmail.com", userResponse.getEmail());
+
+        verify(userRepository, times(1)).findById(1L);
     }
 
 
