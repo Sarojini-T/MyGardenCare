@@ -84,11 +84,11 @@ public class UserServiceTest {
 
     @Test
     public void createNewUser_Success(){
-        UserCreateRequest createReq = new UserCreateRequest();
-        createReq.setUsername("user01");
-        createReq.setEmail("user01@gmail.com");
-        createReq.setPassword("123");
-        createReq.setZipcode("12345");
+
+        UserCreateRequest createReq = userCreateRequestHelper("user01",
+                "user01@gmail.com",
+                "123",
+                "12345");
 
         when(passwordEncoder.encode("123")).thenReturn("encoded123");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -109,11 +109,10 @@ public class UserServiceTest {
 
     @Test
     public void createNewUser_NormalizeEmailOrUsername_Success(){
-        UserCreateRequest createReq = new UserCreateRequest();
-        createReq.setUsername("user01  ");
-        createReq.setEmail("  user01@gmail.com  ");
-        createReq.setPassword("123");
-        createReq.setZipcode("12345");
+        UserCreateRequest createReq = userCreateRequestHelper("user01  ",
+                "  user01@gmail.com  ",
+                "123",
+                "12345");
 
         when(passwordEncoder.encode("123")).thenReturn("encoded123");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -130,10 +129,10 @@ public class UserServiceTest {
 
     @Test
     public void createNewUser_ThrowsConflictException_WhenUsernameOrEmailIsDuplicate(){
-        UserCreateRequest createReq = new UserCreateRequest();
-        createReq.setUsername("user01");
-        createReq.setEmail("user01@gmail.com");
-        createReq.setPassword("abc");
+        UserCreateRequest createReq = userCreateRequestHelper("user01",
+                "user01@gmail.com",
+                "abc",
+                "12345");
 
         User existingUser = new User("user01", "user01@gmail.com", "123");
         ReflectionTestUtils.setField(existingUser, "id", 1L);
@@ -157,11 +156,10 @@ public class UserServiceTest {
         when(passwordEncoder.encode("abc")).thenReturn("encodedAbc");
         when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 
-        UserUpdateRequest updateReq = new UserUpdateRequest();
-        updateReq.setUsername("user02");
-        updateReq.setEmail(" ");
-        updateReq.setPassword("abc");
-        updateReq.setZipcode("");
+        UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.of("user02"),
+                Optional.of(" "),
+                Optional.of("abc"),
+                Optional.of("02156"));
 
         UserResponse updatedUser = userService.updateUserById(1L, updateReq);
 
@@ -171,9 +169,28 @@ public class UserServiceTest {
         assertEquals("user02", updatedUser.getUsername());
         assertEquals("user01@gmail.com", updatedUser.getEmail());
         assertEquals("encodedAbc", capturedUser.getPassword());
-        assertNull(updatedUser.getZipcode());
+        assertEquals("02156",updatedUser.getZipcode());
 
         verify(passwordEncoder, times(1)).encode("abc");
+        verify(userRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    public void updateUserById_SetZipcodeToNull_WhenUpdatedZipcodeIsBlank(){
+        User existingUser = new User("user01", "user01@gmail.com", "123");
+        existingUser.updateZipCode("12345");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
+
+        UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(""));
+
+        UserResponse updatedUser = userService.updateUserById(1L, updateReq);
+
+        assertNull(updatedUser.getZipcode());
+
         verify(userRepository, times(1)).findById(1L);
     }
 
@@ -184,9 +201,10 @@ public class UserServiceTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 
-        UserUpdateRequest updateReq = new UserUpdateRequest();
-        updateReq.setUsername("user01");
-        updateReq.setEmail("user01@gmail.com");
+        UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.of("user01"),
+                Optional.of("user01@gmail.com"),
+                Optional.empty(),
+                Optional.empty());
 
         UserResponse userResponse = userService.updateUserById(1L,updateReq);
 
@@ -199,8 +217,10 @@ public class UserServiceTest {
 
     @Test
     public void updateUserById_ThrowEntityNotFoundException_WhenUserDoesNotExist(){
-        UserUpdateRequest updateReq = new UserUpdateRequest();
-        updateReq.setUsername("user02");
+        UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.of("user02"),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> {
             userService.updateUserById(1L, updateReq);
@@ -208,7 +228,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void updateUserById_ThrowConflictException_WhenUsernameOrEmailIsDuplicate(){
+    public void updateUserById_ThrowConflictException_WhenUsernameIsDuplicate(){
         User userToUpdate = new User("user01", "user01@gmail.com", "123");
         ReflectionTestUtils.setField(userToUpdate, "id", 1L);
 
@@ -218,8 +238,31 @@ public class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(userToUpdate));
         when(userRepository.findByUsernameIgnoreCase("user02")).thenReturn(Optional.of(otherExistingUser));
 
-        UserUpdateRequest updateReq = new UserUpdateRequest();
-        updateReq.setUsername("user02");
+        UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.of("user02"),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty());
+
+        assertThrows(ConflictException.class, () -> {
+            userService.updateUserById(1L, updateReq);
+        });
+    }
+
+    @Test
+    public void updateUserById_ThrowConflictException_WhenEmailIsDuplicate(){
+        User userToUpdate = new User("user01", "user01@gmail.com", "123");
+        ReflectionTestUtils.setField(userToUpdate, "id", 1L);
+
+        User otherExistingUser = new User("user02", "user02@gmail.com", "123");
+        ReflectionTestUtils.setField(otherExistingUser , "id", 2L);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(userToUpdate));
+        when(userRepository.findByEmailIgnoreCase("user02@gmail.com")).thenReturn(Optional.of(otherExistingUser));
+
+        UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.empty(),
+                Optional.of("user02@gmail.com"),
+                Optional.empty(),
+                Optional.empty());
 
         assertThrows(ConflictException.class, () -> {
             userService.updateUserById(1L, updateReq);
@@ -246,5 +289,31 @@ public class UserServiceTest {
         assertThrows(EntityNotFoundException.class, () -> {
             userService.deleteById(1L);
         });
+    }
+
+    private UserCreateRequest userCreateRequestHelper(String username,
+                                                      String email,
+                                                      String password,
+                                                      String zipcode){
+        UserCreateRequest createReq = new UserCreateRequest();
+        createReq.setUsername(username);
+        createReq.setEmail(email);
+        createReq.setPassword(password);
+        createReq.setZipcode(zipcode);
+
+        return createReq;
+    }
+
+    private UserUpdateRequest userUpdateRequestHelper(Optional<String> username,
+                                                      Optional<String> email,
+                                                      Optional<String> password,
+                                                      Optional<String> zipcode){
+        UserUpdateRequest updateReq = new UserUpdateRequest();
+        if(username.isPresent()) updateReq.setUsername(username.get());
+        if(email.isPresent()) updateReq.setEmail(email.get());
+        if(password.isPresent()) updateReq.setPassword(password.get());
+        if(zipcode.isPresent()) updateReq.setZipcode(zipcode.get());
+
+        return updateReq;
     }
 }
