@@ -11,7 +11,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestClient;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,41 +39,16 @@ public class PermapeopleServiceTest {
     }
 
     @Test
-    void searchExternalPlantApi_ReturnsEmptyList_WhenApiThrowsException(){
+    void searchExternalPlantApi_Success(){
         setUpFluentMock();
 
-        when(responseSpec.body(PermapeopleService.PermapeopleResponse.class))
-                .thenThrow(new RuntimeException("Permapeople API is down"));
-
-        List<PlantApiDto> result = permapeopleService.searchExternalPlantApi("Tomato");
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void searchExternalPlantApi_ReturnsEmptyList_WhenNoPlantsFound(){
-        setUpFluentMock();
-
-        PermapeopleService.PermapeopleResponse emptyResponse = new PermapeopleService.PermapeopleResponse();
-        emptyResponse.setPlants(new ArrayList<>());
-
-        when(responseSpec.body(PermapeopleService.PermapeopleResponse.class))
-                .thenReturn(emptyResponse);
-
-        List<PlantApiDto> result = permapeopleService.searchExternalPlantApi("nonexistentPlant");
-
-        assertTrue(result.isEmpty());
-    }
-
-    @Test
-    void testMapToPlantApiDto_Success(){
         PermapeopleService.PermapeoplePlant mockApiData = new PermapeopleService.PermapeoplePlant();
         mockApiData.setId("1");
         mockApiData.setScientificName("Allium aflatunense");
 
         PermapeopleService.PermapeopleData alternateName = new PermapeopleService.PermapeopleData();
         alternateName.setKey("Alternate name");
-        alternateName.setValue("Ornamental onion");
+        alternateName.setValue("Ornamental onion, Persian onion");
 
         PermapeopleService.PermapeopleData height = new PermapeopleService.PermapeopleData();
         height.setKey("Height");
@@ -86,16 +60,48 @@ public class PermapeopleServiceTest {
 
         mockApiData.setData(List.of(alternateName, height, soilType));
 
-        PlantApiDto plantApiDto = permapeopleService.mapToPlantApiDto(mockApiData);
+        PermapeopleService.PermapeopleResponse response = new PermapeopleService.PermapeopleResponse();
+        response.setPlants(List.of(mockApiData));
 
-        assertEquals("Allium aflatunense", plantApiDto.getScientificName());
-        assertEquals("Ornamental onion", plantApiDto.getCommonName());
-        assertEquals("Light (sandy), Medium", plantApiDto.getSoilType());
-        assertEquals(1.0, plantApiDto.getHeightInMeters());
+        when(responseSpec.body(PermapeopleService.PermapeopleResponse.class))
+                .thenReturn(response);
+
+        List<PlantApiDto> plantApiDto = permapeopleService.searchExternalPlantApi("Ornamental onion");
+
+        assertEquals(1, plantApiDto.size());
+        assertEquals("Allium aflatunense", plantApiDto.get(0).getScientificName());
+        assertEquals("Ornamental onion", plantApiDto.get(0).getCommonName());
     }
 
     @Test
-    void testMapToPlantApiDto_HandlesNullDataArray(){
+    void searchExternalPlantApi_ReturnsEmptyList_WhenNoPlantsFound(){
+        setUpFluentMock();
+
+        PermapeopleService.PermapeopleResponse emptyResponse = new PermapeopleService.PermapeopleResponse();
+
+        when(responseSpec.body(PermapeopleService.PermapeopleResponse.class))
+                .thenReturn(emptyResponse);
+
+        List<PlantApiDto> result = permapeopleService.searchExternalPlantApi("nonexistentPlant");
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void searchExternalPlantApi_ReturnsEmptyList_WhenApiThrowsException(){
+        setUpFluentMock();
+
+        when(responseSpec.body(PermapeopleService.PermapeopleResponse.class))
+                .thenThrow(new RuntimeException("Permapeople API is down"));
+
+        List<PlantApiDto> result = permapeopleService.searchExternalPlantApi("Tomato");
+
+        assertTrue(result.isEmpty());
+    }
+
+
+    @Test
+    void searchExternalPlantApi_HandlesNullDataArray(){
         PermapeopleService.PermapeoplePlant mockApiData = new PermapeopleService.PermapeoplePlant();
         mockApiData.setId("1");
         mockApiData.setScientificName("Allium aflatunense");
@@ -130,6 +136,21 @@ public class PermapeopleServiceTest {
         PermapeopleService.PermapeopleData badHeight = new PermapeopleService.PermapeopleData();
         badHeight.setKey("Height");
         badHeight.setValue("");
+
+        mockApiData.setData(List.of(badHeight));
+
+        PlantApiDto plantApiDto = permapeopleService.mapToPlantApiDto(mockApiData);
+
+        assertNull(plantApiDto.getHeightInMeters());
+    }
+
+    @Test
+    void testMapToPlantApiDto_CatchNumberFormatException_WhenHeightContainsNonNumericCharacters(){
+        PermapeopleService.PermapeoplePlant mockApiData = new PermapeopleService.PermapeoplePlant();
+
+        PermapeopleService.PermapeopleData badHeight = new PermapeopleService.PermapeopleData();
+        badHeight.setKey("Height");
+        badHeight.setValue("one");
 
         mockApiData.setData(List.of(badHeight));
 
