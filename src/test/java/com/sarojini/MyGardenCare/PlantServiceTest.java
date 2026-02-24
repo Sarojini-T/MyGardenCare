@@ -39,12 +39,12 @@ public class PlantServiceTest {
 
     @BeforeEach
     void setUp(){
-        mockPlant = new Plant("Monstera", "Monstera deliciosa");
+        mockPlant = new Plant("Tomato", "Solanum lycopersicum");
         ReflectionTestUtils.setField(mockPlant, "id", 1L);
 
         mockPlantApiDto = new PlantApiDto();
-        mockPlantApiDto.setCommonName("Monstera");
-        mockPlantApiDto.setScientificName("Monstera deliciosa");
+        mockPlantApiDto.setCommonName("Tomato");
+        mockPlantApiDto.setScientificName("Solanum lycopersicum");
     }
 
     @Test
@@ -54,8 +54,8 @@ public class PlantServiceTest {
         PlantResponse response = plantService.getPlantById(1L);
 
         assertNotNull(response);
-        assertEquals("Monstera", response.getCommonName());
-        assertEquals("Monstera deliciosa", response.getScientificName());
+        assertEquals("Tomato", response.getCommonName());
+        assertEquals("Solanum lycopersicum", response.getScientificName());
         verify(plantRepository, times(1)).findById(1L);
     }
 
@@ -69,29 +69,31 @@ public class PlantServiceTest {
 
     @Test
     void getPlantByName_Success_WhenPlantFoundInDB(){
-        when(plantRepository.searchByAnyName("Monstera")).thenReturn(List.of(mockPlant));
+        when(plantRepository.searchByAnyName("Tomato")).thenReturn(List.of(mockPlant));
 
-        PlantResponse response = plantService.getPlantByName("Monstera");
+        PlantResponse response = plantService.getPlantByName("Tomato");
 
         assertNotNull(response);
-        assertEquals("Monstera", response.getCommonName());
+        assertEquals("Tomato", response.getCommonName());
+        assertEquals("Solanum lycopersicum", response.getScientificName());
 
         verify(externalPlantApiService, never()).searchExternalPlantApi(anyString());
     }
 
     @Test
     void getPlantByName_Success_WhenPlantFetchedFromExternalApi(){
-        when(plantRepository.searchByAnyName("Monstera")).thenReturn(new ArrayList<>());
-        when(externalPlantApiService.searchExternalPlantApi("Monstera")).thenReturn(List.of(mockPlantApiDto));
-        when(plantRepository.findByScientificNameIgnoreCase("Monstera deliciosa")).thenReturn(Optional.empty());
+        when(plantRepository.searchByAnyName("Tomato")).thenReturn(new ArrayList<>());
+        when(externalPlantApiService.searchExternalPlantApi("Tomato")).thenReturn(List.of(mockPlantApiDto));
+        when(plantRepository.findByScientificNameIgnoreCase("Solanum lycopersicum")).thenReturn(Optional.empty());
         when(plantRepository.save(any(Plant.class))).thenAnswer(i -> i.getArgument(0));
 
-        PlantResponse response = plantService.getPlantByName("Monstera");
+        PlantResponse response = plantService.getPlantByName("Tomato");
 
         assertNotNull(response);
-        assertEquals("Monstera", response.getCommonName());
+        assertEquals("Tomato", response.getCommonName());
+        assertEquals("Solanum lycopersicum", response.getScientificName());
 
-        verify(externalPlantApiService, times(1)).searchExternalPlantApi("Monstera");
+        verify(externalPlantApiService, times(1)).searchExternalPlantApi("Tomato");
         verify(plantRepository, times(1)).save(any(Plant.class));
     }
 
@@ -107,12 +109,12 @@ public class PlantServiceTest {
 
     @Test
     void getPlantByName_ThrowsEntityNotFoundException_WhenApiDataIsIncomplete(){
-        String query = "Tomato";
+        String query = "Hillside Blueberry";
 
         when(plantRepository.searchByAnyName(query)).thenReturn(new ArrayList<>());
 
         PlantApiDto incompleteDto = new PlantApiDto();
-        incompleteDto.setScientificName("Solanum lycopersicum");
+        incompleteDto.setScientificName("Vaccinium constablaei");
         incompleteDto.setCommonName("");
 
         when(externalPlantApiService.searchExternalPlantApi(query)).thenReturn(List.of(incompleteDto));
@@ -121,7 +123,7 @@ public class PlantServiceTest {
             plantService.getPlantByName(query);
         });
 
-        assertEquals("API returned incomplete data for Tomato.", exception.getMessage());
+        assertEquals("API returned incomplete data for Hillside Blueberry.", exception.getMessage());
 
         verify(plantRepository, never()).findByScientificNameIgnoreCase(anyString());
         verify(plantRepository, never()).save(any(Plant.class));
@@ -135,13 +137,36 @@ public class PlantServiceTest {
         PlantResponse response = plantService.addPlant(mockPlantApiDto);
 
         assertNotNull(response);
-        assertEquals("Monstera deliciosa", response.getScientificName());
+        assertEquals("Solanum lycopersicum", response.getScientificName());
+        verify(plantRepository, times(1)).save(any(Plant.class));
+    }
+
+    @Test
+    void addPlant_WhenPlantDataHasAllFields(){
+        mockPlantApiDto.setAlternateNames("Garden tomato, Love apple");
+        mockPlantApiDto.setLifeCycle("Annual, Perennial");
+        mockPlantApiDto.setGrowth("Fast");
+        mockPlantApiDto.setSoilType("Light (sandy), Medium, Heavy (clay)");
+        mockPlantApiDto.setLightRequirement("Full sun");
+        mockPlantApiDto.setWaterRequirement("Moist");
+        mockPlantApiDto.setHeightInMeters(2.0);
+        mockPlantApiDto.setWidthInMeters(1.0);
+
+        when(plantRepository.existsByScientificNameIgnoreCase(anyString())).thenReturn(false);
+        when(plantRepository.save(any(Plant.class))).thenAnswer(i -> i.getArgument(0));
+
+        PlantResponse response = plantService.addPlant(mockPlantApiDto);
+
+        assertNotNull(response);
+        assertEquals("Solanum lycopersicum", response.getScientificName());
+        assertEquals("Garden tomato, Love apple", response.getAlternateNames());
+
         verify(plantRepository, times(1)).save(any(Plant.class));
     }
 
     @Test
     void addPlant_ThrowConflictException_WhenPlantExistsAlready(){
-        when(plantRepository.existsByScientificNameIgnoreCase("Monstera deliciosa")).thenReturn(true);
+        when(plantRepository.existsByScientificNameIgnoreCase("Solanum lycopersicum")).thenReturn(true);
 
         assertThrows(ConflictException.class, () -> plantService.addPlant(mockPlantApiDto));
         verify(plantRepository, never()).save(any(Plant.class));
