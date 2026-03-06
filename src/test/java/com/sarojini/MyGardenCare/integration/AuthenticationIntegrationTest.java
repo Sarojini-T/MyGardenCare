@@ -10,14 +10,14 @@ public class AuthenticationIntegrationTest extends BaseIntegrationTest{
     void registerShouldReturnTokenAndAllowAccessToProtectedEndpoint() throws Exception{
         String token = registerUserAndGetToken();
 
-        mockMvc.perform(get("/api/v1/users/user01/plants")
+        mockMvc.perform(get("/api/v1/user-plants")
                 .header("Authorization", token))
                 .andExpect(status().isOk());
     }
 
     @Test
     void shouldDenyAccessWithoutToken() throws Exception {
-        mockMvc.perform(get("/api/v1/users/user01/plants"))
+        mockMvc.perform(get("/api/v1/user-plants"))
                 .andExpect(status().isForbidden());
     }
 }

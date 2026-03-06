@@ -30,7 +30,7 @@ public class UserPlantIntegrationTest extends BaseIntegrationTest {
         createReq.setPlantContainer(PlantContainer.POT);
         createReq.setPlantLocation(PlantLocation.OUTDOOR);
 
-        mockMvc.perform(post("/api/v1/users/user01/plants")
+        mockMvc.perform(post("/api/v1/user-plants")
                         .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createReq)))
