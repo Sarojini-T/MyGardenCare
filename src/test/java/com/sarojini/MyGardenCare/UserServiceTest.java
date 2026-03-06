@@ -18,6 +18,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,6 +38,22 @@ public class UserServiceTest {
 
     @Captor
     private ArgumentCaptor<User> userArgumentCaptor;
+
+    @Test
+    public void getAllUsers_Success(){
+        User user1 = new User("user01", "user01@gmail.com", "abc");
+        User user2 = new User("user02", "user02@gmail.com", "123");
+
+        List allUsers = List.of(user1, user2);
+
+        when(userRepository.findAll()).thenReturn(allUsers);
+
+        List<UserResponse> allUsersResponse = userService.getAllUsers();
+
+        assertEquals(2, allUsersResponse.size());
+        assertEquals(user1.getUsername(), allUsersResponse.get(0).getUsername());
+        assertEquals(user2.getUsername(), allUsersResponse.get(1).getUsername());
+    }
 
     @Test
     public void getUserById_Success(){
@@ -153,8 +171,8 @@ public class UserServiceTest {
         User existingUser = new User("user01", "user01@gmail.com", "123");
         existingUser.updateZipCode("12345");
 
+        when(userRepository.findByUsernameIgnoreCase(existingUser.getUsername())).thenReturn(Optional.of(existingUser));
         when(passwordEncoder.encode("abc")).thenReturn("encodedAbc");
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 
         UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.of("user02"),
                 Optional.of(" "),
@@ -172,7 +190,7 @@ public class UserServiceTest {
         assertEquals("02156",updatedUser.getZipcode());
 
         verify(passwordEncoder, times(1)).encode("abc");
-        verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(1)).findByUsernameIgnoreCase(existingUser.getUsername());
     }
 
     @Test
@@ -180,7 +198,7 @@ public class UserServiceTest {
         User existingUser = new User("user01", "user01@gmail.com", "123");
         existingUser.updateZipCode("12345");
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByUsernameIgnoreCase(existingUser.getUsername())).thenReturn(Optional.of(existingUser));
 
         UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.empty(),
                 Optional.empty(),
@@ -189,17 +207,20 @@ public class UserServiceTest {
 
         UserResponse updatedUser = userService.updateMyProfile( existingUser.getUsername(), updateReq);
 
+        verify(userRepository).save(userArgumentCaptor.capture());
+        User capturedUser = userArgumentCaptor.getValue();
+
         assertNull(updatedUser.getZipcode());
 
-        verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(1)).findByUsernameIgnoreCase(existingUser.getUsername());
     }
 
     @Test
-    public void updateMyProfile_Success_WhenUsernameOrEmailIsSameAsCurrent(){
+    public void updateMyProfile_NoChange_WhenUsernameAndEmailIsSameAsCurrent(){
         User existingUser = new User("user01", "user01@gmail.com", "123");
         ReflectionTestUtils.setField(existingUser, "id", 1L);
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
+        when(userRepository.findByUsernameIgnoreCase(existingUser.getUsername())).thenReturn(Optional.of(existingUser));
 
         UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.of("user01"),
                 Optional.of("user01@gmail.com"),
@@ -211,7 +232,7 @@ public class UserServiceTest {
         assertEquals("user01", userResponse.getUsername());
         assertEquals("user01@gmail.com", userResponse.getEmail());
 
-        verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(2)).findByUsernameIgnoreCase(existingUser.getUsername());
     }
 
 
@@ -235,8 +256,8 @@ public class UserServiceTest {
         User otherExistingUser = new User("user02", "user02@gmail.com", "123");
         ReflectionTestUtils.setField(otherExistingUser , "id", 2L);
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(userToUpdate));
-        when(userRepository.findByUsernameIgnoreCase("user02")).thenReturn(Optional.of(otherExistingUser));
+        when(userRepository.findByUsernameIgnoreCase(userToUpdate.getUsername())).thenReturn(Optional.of(userToUpdate));
+        when(userRepository.findByUsernameIgnoreCase(otherExistingUser.getUsername())).thenReturn(Optional.of(otherExistingUser));
 
         UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.of("user02"),
                 Optional.empty(),
@@ -249,15 +270,15 @@ public class UserServiceTest {
     }
 
     @Test
-    public void updateMyProfileThrowConflictException_WhenEmailIsDuplicate(){
+    public void updateMyProfileThrowsConflictException_WhenEmailIsDuplicate(){
         User userToUpdate = new User("user01", "user01@gmail.com", "123");
         ReflectionTestUtils.setField(userToUpdate, "id", 1L);
 
         User otherExistingUser = new User("user02", "user02@gmail.com", "123");
         ReflectionTestUtils.setField(otherExistingUser , "id", 2L);
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(userToUpdate));
-        when(userRepository.findByEmailIgnoreCase("user02@gmail.com")).thenReturn(Optional.of(otherExistingUser));
+        when(userRepository.findByUsernameIgnoreCase(userToUpdate.getUsername())).thenReturn(Optional.of(userToUpdate));
+        when(userRepository.findByEmailIgnoreCase(otherExistingUser.getEmail())).thenReturn(Optional.of(otherExistingUser));
 
         UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.empty(),
                 Optional.of("user02@gmail.com"),
@@ -290,6 +311,28 @@ public class UserServiceTest {
             userService.deleteById(1L);
         });
     }
+
+    @Test
+    public void deleteByUsername_Success(){
+        User user = new User("user01", "user01@gmail.com", "123");
+        user.updateZipCode("12345");
+
+        when(userRepository.findByUsernameIgnoreCase(user.getUsername())).thenReturn(Optional.of(user));
+
+        userService.deleteByUsername(user.getUsername());
+
+        verify(userRepository, times(1)).delete(user);
+    }
+
+    @Test
+    public void deleteByUsername_ThrowsEntityNotFoundException_WhenUserDoesNotExist(){
+        when(userRepository.findByUsernameIgnoreCase("user01")).thenReturn(Optional.empty());
+
+        assertThrows(EntityNotFoundException.class, () -> {
+            userService.deleteByUsername("user01");
+        });
+    }
+
 
     private UserCreateRequest userCreateRequestHelper(String username,
                                                       String email,
