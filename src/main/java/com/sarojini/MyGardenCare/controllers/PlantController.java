@@ -5,22 +5,19 @@ import com.sarojini.MyGardenCare.services.PlantService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.validation.annotation.Validated;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/v1/plants")
+@RequiredArgsConstructor
 @Validated
 public class PlantController {
     private final PlantService plantService;
-
-    public PlantController(PlantService plantService){
-        this.plantService = plantService;
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<PlantResponse> getPlantById(@PathVariable Long id){
@@ -37,6 +34,7 @@ public class PlantController {
         return ResponseEntity.ok(plantResponse);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<PlantResponse> addPlant(@Valid @RequestBody PlantApiDto plantApiDto){
         PlantResponse addedPlant = plantService.addPlant(plantApiDto);

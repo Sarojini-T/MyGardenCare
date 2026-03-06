@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,6 +22,16 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    public List<UserResponse> getAllUsers(){
+        Iterable<User> allUsers = userRepository.findAll();
+
+        List<UserResponse> userResponses = new ArrayList<>();
+        for(User user : allUsers){
+            userResponses.add(mapUserToUserResponse(user));
+        }
+        return userResponses;
+    }
 
     public UserResponse getUserById(Long id){
         User userById = getUserByIdHelper(id);
@@ -45,8 +57,8 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponse updateUserById(Long id, UserUpdateRequest userUpdateReq){
-        User userToUpdate = getUserByIdHelper(id);
+    public UserResponse updateMyProfile(String username, UserUpdateRequest userUpdateReq){
+        User userToUpdate = getUserByUsernameHelper(username);
 
         String normalizedUsername = StringUtils.hasText(userUpdateReq.getUsername()) ? userUpdateReq.getUsername().trim() : null;
         String normalizedEmail = StringUtils.hasText(userUpdateReq.getEmail()) ? userUpdateReq.getEmail().trim() : null;
@@ -68,13 +80,22 @@ public class UserService {
         userRepository.delete(userToDelete);
     }
 
+    public void deleteByUsername(String username){
+        User userToDelete = getUserByUsernameHelper(username);
+        userRepository.delete(userToDelete);
+    }
+
     private User getUserByIdHelper(Long id){
         Optional<User> userByIdOptional = userRepository.findById(id);
         if(userByIdOptional.isEmpty()) throw new EntityNotFoundException("User " + id + " not found.");
         return userByIdOptional.get();
     }
 
-
+    private User getUserByUsernameHelper(String username){
+        Optional<User> userByUsernameOptional = userRepository.findByUsernameIgnoreCase(username);
+        if(userByUsernameOptional.isEmpty()) throw new EntityNotFoundException("User " + username + " not found.");
+        return userByUsernameOptional.get();
+    }
 
     private UserResponse mapUserToUserResponse(User user){
         Long id = user.getId();

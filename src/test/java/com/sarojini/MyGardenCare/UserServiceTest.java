@@ -149,7 +149,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void updateUserById_Success(){
+    public void updateMyProfile_Success(){
         User existingUser = new User("user01", "user01@gmail.com", "123");
         existingUser.updateZipCode("12345");
 
@@ -161,7 +161,7 @@ public class UserServiceTest {
                 Optional.of("abc"),
                 Optional.of("02156"));
 
-        UserResponse updatedUser = userService.updateUserById(1L, updateReq);
+        UserResponse updatedUser = userService.updateMyProfile(existingUser.getUsername(), updateReq);
 
         verify(userRepository).save(userArgumentCaptor.capture());
         User capturedUser = userArgumentCaptor.getValue();
@@ -176,7 +176,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void updateUserById_SetZipcodeToNull_WhenUpdatedZipcodeIsBlank(){
+    public void updateMyProfile_SetZipcodeToNull_WhenUpdatedZipcodeIsBlank(){
         User existingUser = new User("user01", "user01@gmail.com", "123");
         existingUser.updateZipCode("12345");
 
@@ -187,7 +187,7 @@ public class UserServiceTest {
                 Optional.empty(),
                 Optional.of(""));
 
-        UserResponse updatedUser = userService.updateUserById(1L, updateReq);
+        UserResponse updatedUser = userService.updateMyProfile( existingUser.getUsername(), updateReq);
 
         assertNull(updatedUser.getZipcode());
 
@@ -195,7 +195,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void updateUserById_Success_WhenUsernameOrEmailIsSameAsCurrent(){
+    public void updateMyProfile_Success_WhenUsernameOrEmailIsSameAsCurrent(){
         User existingUser = new User("user01", "user01@gmail.com", "123");
         ReflectionTestUtils.setField(existingUser, "id", 1L);
 
@@ -206,7 +206,7 @@ public class UserServiceTest {
                 Optional.empty(),
                 Optional.empty());
 
-        UserResponse userResponse = userService.updateUserById(1L,updateReq);
+        UserResponse userResponse = userService.updateMyProfile(existingUser.getUsername(), updateReq);
 
         assertEquals("user01", userResponse.getUsername());
         assertEquals("user01@gmail.com", userResponse.getEmail());
@@ -216,19 +216,19 @@ public class UserServiceTest {
 
 
     @Test
-    public void updateUserById_ThrowEntityNotFoundException_WhenUserDoesNotExist(){
+    public void updateMyProfile_ThrowEntityNotFoundException_WhenUserDoesNotExist(){
         UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.of("user02"),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> {
-            userService.updateUserById(1L, updateReq);
+            userService.updateMyProfile(updateReq.getUsername(), updateReq);
         });
     }
 
     @Test
-    public void updateUserById_ThrowConflictException_WhenUsernameIsDuplicate(){
+    public void updateMyProfile_ThrowConflictException_WhenUsernameIsDuplicate(){
         User userToUpdate = new User("user01", "user01@gmail.com", "123");
         ReflectionTestUtils.setField(userToUpdate, "id", 1L);
 
@@ -244,12 +244,12 @@ public class UserServiceTest {
                 Optional.empty());
 
         assertThrows(ConflictException.class, () -> {
-            userService.updateUserById(1L, updateReq);
+            userService.updateMyProfile(userToUpdate.getUsername(), updateReq);
         });
     }
 
     @Test
-    public void updateUserById_ThrowConflictException_WhenEmailIsDuplicate(){
+    public void updateMyProfileThrowConflictException_WhenEmailIsDuplicate(){
         User userToUpdate = new User("user01", "user01@gmail.com", "123");
         ReflectionTestUtils.setField(userToUpdate, "id", 1L);
 
@@ -265,7 +265,7 @@ public class UserServiceTest {
                 Optional.empty());
 
         assertThrows(ConflictException.class, () -> {
-            userService.updateUserById(1L, updateReq);
+            userService.updateMyProfile(userToUpdate.getUsername(), updateReq);
         });
     }
 

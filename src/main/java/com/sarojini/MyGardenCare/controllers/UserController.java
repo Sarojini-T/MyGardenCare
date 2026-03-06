@@ -1,47 +1,59 @@
 package com.sarojini.MyGardenCare.controllers;
-import com.sarojini.MyGardenCare.dtos.UserCreateRequest;
 import com.sarojini.MyGardenCare.dtos.UserResponse;
 import com.sarojini.MyGardenCare.dtos.UserUpdateRequest;
 import com.sarojini.MyGardenCare.services.UserService;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
+import java.security.Principal;
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/v1/users")
+@RequiredArgsConstructor
 @Validated
 public class UserController {
     private final UserService userService;
 
-    public UserController(UserService userService){
-        this.userService = userService;
-    }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<UserResponse> getUserByUsername(@RequestParam("username") String username){
-        UserResponse userByUsername = userService.getUserByUsername(username);
-        return ResponseEntity.ok(userByUsername);
+    public ResponseEntity<List<UserResponse>> getAllUsers(){
+        return ResponseEntity.ok(userService.getAllUsers());
     }
 
-   @PostMapping
-    public ResponseEntity<UserResponse> createNewUser(@Valid @RequestBody UserCreateRequest userCreateReq){
-        UserResponse newUser = userService.createNewUser(userCreateReq);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
-   }
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id){
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
 
-   @PatchMapping("/{id}")
-   public ResponseEntity<UserResponse> updateUserById(@PathVariable Long id,
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(@PathVariable Long id){
+        userService.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getMyProfile(Principal principal){
+        return ResponseEntity.ok(userService.getUserByUsername(principal.getName()));
+    }
+
+   @PatchMapping("/me")
+   public ResponseEntity<UserResponse> updateMyProfile(Principal principal,
                                                       @Valid @RequestBody UserUpdateRequest userUpdateReq){
-        UserResponse updatedUserById =  userService.updateUserById(id, userUpdateReq);
+        UserResponse updatedUserById =  userService.updateMyProfile(principal.getName(), userUpdateReq);
         return ResponseEntity.ok(updatedUserById);
    }
 
-   @DeleteMapping("/{id}")
-   public ResponseEntity<Void> deleteById(@PathVariable Long id){
-        userService.deleteById(id);
+   @DeleteMapping("/me")
+    public ResponseEntity<Void> deleteMyProfile(Principal principal){
+        userService.deleteByUsername(principal.getName());
         return ResponseEntity.noContent().build();
    }
 

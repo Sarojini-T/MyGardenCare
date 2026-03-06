@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import org.springframework.security.access.AccessDeniedException;
 import java.security.SignatureException;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,6 +77,15 @@ public class GlobalExceptionHandler {
         return Map.of(
                 "message", "Invalid token",
                 "errors", "The token signature is invalid."
+        );
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, Object> handleAccessDenied(AccessDeniedException ex){
+        return Map.of(
+                "message", "Access denied",
+                "errors", "Must be an ADMIN to access"
         );
     }
 
