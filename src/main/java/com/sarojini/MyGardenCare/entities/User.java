@@ -1,4 +1,5 @@
 package com.sarojini.MyGardenCare.entities;
+import com.sarojini.MyGardenCare.enums.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -39,9 +40,12 @@ public class User implements UserDetails {
     @UpdateTimestamp
     private Instant updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.USER;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities(){
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
