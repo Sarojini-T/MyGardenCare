@@ -1,5 +1,6 @@
 package com.sarojini.MyGardenCare.exceptions;
 
+import com.sarojini.MyGardenCare.dtos.ApiErrorSchemaDto;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityNotFoundException;
@@ -23,81 +24,72 @@ import java.util.Map;
 public class GlobalExceptionHandler {
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Map<String, String> handleEntityNotFoundException(EntityNotFoundException ex){
-        return Map.of("message", ex.getMessage());
+    public ApiErrorSchemaDto handleEntityNotFoundException(EntityNotFoundException ex){
+        return new ApiErrorSchemaDto(ex.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleIllegalArgumentException(IllegalArgumentException ex){
-        return Map.of("message", ex.getMessage());
+    public ApiErrorSchemaDto handleIllegalArgumentException(IllegalArgumentException ex){
+        return new ApiErrorSchemaDto(ex.getMessage());
     }
 
     @ExceptionHandler(ConflictException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public Map<String, String> handleConflictException(ConflictException ex){
-        return Map.of("message", ex.getMessage());
+    public ApiErrorSchemaDto handleConflictException(ConflictException ex){
+        return new ApiErrorSchemaDto(ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex){
+    public ApiErrorSchemaDto handleMethodArgumentNotValidException(MethodArgumentNotValidException ex){
         Map<String, String> errors = new HashMap<>();
 
         ex.getBindingResult()
                 .getFieldErrors()
                 .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
-        return Map.of("message", "validation failed", "errors", errors);
-    }
-
-    @ExceptionHandler(Exception.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Map<String, String> handleGenericExceptions(Exception ex){
-        log.error("Something went wrong: {}", ex.getMessage(), ex);
-
-        return Map.of("message", "An unexpected error occurred");
+        return new ApiErrorSchemaDto("Validation failed", errors);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public Map<String, Object> handleBadCredentials(BadCredentialsException ex){
-        return Map.of("message", "Authentication failed", "errors", "Invalid username or password");
+    public ApiErrorSchemaDto handleBadCredentials(BadCredentialsException ex){
+        return new ApiErrorSchemaDto("Authentication failed: invalid username or password");
     }
 
     @ExceptionHandler(ExpiredJwtException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public Map<String, Object> handleExpiredJwt(ExpiredJwtException ex) {
-        return Map.of(
-                "message", "Session expired",
-                "errors", "Your token has expired. Please log in again."
-        );
+    public ApiErrorSchemaDto handleExpiredJwt(ExpiredJwtException ex) {
+        return new ApiErrorSchemaDto(ex.getMessage());
     }
 
     @ExceptionHandler(SignatureException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public Map<String, Object> handleInvalidSignature(SignatureException ex) {
-        return Map.of(
-                "message", "Invalid token",
-                "errors", "The token signature is invalid."
-        );
+    public ApiErrorSchemaDto handleInvalidSignature(SignatureException ex) {
+        return new ApiErrorSchemaDto(ex.getMessage());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public Map<String, Object> handleAccessDenied(AccessDeniedException ex){
-        return Map.of(
-                "message", "Access denied",
-                "errors", "Must be an ADMIN to access"
-        );
+    public ApiErrorSchemaDto handleAccessDenied(AccessDeniedException ex){
+        return new ApiErrorSchemaDto(ex.getMessage());
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, Object> handleConstraintValidation(ConstraintViolationException ex){
+    public ApiErrorSchemaDto handleConstraintValidation(ConstraintViolationException ex){
         Map<String, String> errors = new HashMap<>();
 
         ex.getConstraintViolations().forEach(violation ->
                 errors.put(violation.getPropertyPath().toString(), violation.getMessage()));
-        return Map.of("message", "Validation failed", "errors", errors);
+        return new ApiErrorSchemaDto("Validation failed", errors);
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiErrorSchemaDto handleGenericExceptions(Exception ex){
+        log.error("Something went wrong: {}", ex.getMessage(), ex);
+
+        return new ApiErrorSchemaDto(ex.getMessage());
     }
 }
