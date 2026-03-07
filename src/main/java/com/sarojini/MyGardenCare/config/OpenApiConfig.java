@@ -12,16 +12,15 @@ import org.springframework.context.annotation.Configuration;
 @OpenAPIDefinition(
         info = @Info(
                 title = "MyGardenCare API",
-                version = "1.0",
+                version = "v1.0.0",
                 description = """
                 REST API for managing plants, fetching external botanical data, and generating plant care recommendations.
                 
-                Plant data provided by Permapeople.org (https://permapeople.org)
+                Plant data provided by <a href="https://permapeople.org" target="_blank">Permapeople.org</a>
                 
                 This project integrates the Permapeople API for plant search functionality only.
                 Plant data is licensed under the Creative Commons Attribution-ShareAlike 4.0
                 International License (CC BY-SA 4.0).
-                               
                 
                 Features:
                 - JWT Authentication
@@ -30,8 +29,7 @@ import org.springframework.context.annotation.Configuration;
                 - User garden management
                 """,
                 contact = @Contact(
-                        email = "sarojini.torchon@gmail.com",
-                        url = "https://github.com/Sarojini-T"
+                        email = "sarojini.torchon@gmail.com"
                 )
         )
 )

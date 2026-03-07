@@ -1,5 +1,6 @@
 package com.sarojini.MyGardenCare.controllers;
 
+import com.sarojini.MyGardenCare.dtos.ApiErrorSchemaDto;
 import com.sarojini.MyGardenCare.dtos.UserCreateRequest;
 import com.sarojini.MyGardenCare.dtos.AuthenticationRequest;
 import com.sarojini.MyGardenCare.dtos.AuthenticationResponse;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Authentication",
-        description = "Endpoints for user registration and authentication using JWTs")
+@Tag(name = "Authentication", description = "Endpoints for user registration and authentication using JWTs")
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -29,16 +30,26 @@ public class AuthenticationController {
     @Operation(summary = "Register a new user",
     description = "Registers new user and generates a JWT token",
     responses = {
-            @ApiResponse(responseCode = "201", description = "New user registered successfully and JWT token generated"),
-            @ApiResponse(responseCode = "400", description = "Bad request")
+            @ApiResponse(responseCode = "201",
+                    description = "New user registered successfully and JWT token generated",
+            content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
+
+            @ApiResponse(responseCode = "400",
+                    description = "Bad request",
+                    content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class),
+                    examples = {
+                            @ExampleObject(
+                                    value = """
+                            { message : Validation failed,
+                            errors: { email : Please provide a valid email address }
+                            }"""
+                            )
+                    }))
     })
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponse> register(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "New user information",
-                    required = true
-            )
-            @RequestBody UserCreateRequest createReq){
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "New user information", required = true)
+            @Valid @RequestBody UserCreateRequest createReq){
         return ResponseEntity.status(HttpStatus.CREATED).body(authenticationService.register(createReq));
     }
 
@@ -46,17 +57,29 @@ public class AuthenticationController {
     description = "Validates credentials and returns a JWT token for authenticated API access",
     responses = {
             @ApiResponse(responseCode = "200",
-                    description = "User authenticated successfully"
+                    description = "User authenticated successfully",
+                    content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))
             ),
-            @ApiResponse(responseCode = "401", description = "Unauthorized request, missing or invalid JWT"),
-            @ApiResponse(responseCode = "404", description = "User not found")
+
+            @ApiResponse(responseCode = "401",
+                    description = "Unauthorized request, missing or invalid JWT",
+            content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class))),
+
+            @ApiResponse(responseCode = "404",
+                    description = "User not found",
+                    content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class),
+                    examples = {
+                            @ExampleObject(
+                                    value = """
+                            { message: Authentication failed: invalid username or password,
+                            errors: null
+                            }"""
+                            )
+                    }))
     })
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(
-            @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "User login information",
-                    required = true
-            )
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "User login information", required = true)
             @RequestBody AuthenticationRequest authReq){
         return ResponseEntity.ok(authenticationService.authenticate((authReq)));
     }

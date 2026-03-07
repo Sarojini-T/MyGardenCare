@@ -39,7 +39,7 @@ public class PlantService {
         List<PlantApiDto> externalApiPlants = externalPlantApiService.searchExternalPlantApi(query);
 
         if(externalApiPlants.isEmpty()){
-            throw new EntityNotFoundException("Plant " + query + " not found in database or external sources");
+            throw new EntityNotFoundException("Plant " + query + " not found in database or external API");
         }
 
         PlantApiDto validPlantFromApi = null;
