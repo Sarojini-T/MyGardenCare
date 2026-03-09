@@ -3,6 +3,8 @@ import com.sarojini.MyGardenCare.enums.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class UserPlantResponse {
     @Schema(example = "1")
@@ -28,4 +30,7 @@ public class UserPlantResponse {
 
     @Schema(example = "OUTDOOR")
     private PlantLocation plantLocation;
+
+    @Schema(description = "Dynamic care recommendations for this plant")
+    private List<String> plantCareRecommendations;
 }

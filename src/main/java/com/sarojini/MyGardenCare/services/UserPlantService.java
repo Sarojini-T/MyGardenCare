@@ -12,7 +12,6 @@ import com.sarojini.MyGardenCare.enums.ContainerSize;
 import com.sarojini.MyGardenCare.exceptions.ConflictException;
 import com.sarojini.MyGardenCare.repositories.PlantRepository;
 import com.sarojini.MyGardenCare.repositories.UserPlantRepository;
-import com.sarojini.MyGardenCare.repositories.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +27,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserPlantService {
     private final UserPlantRepository userPlantRepository;
-    private final UserRepository userRepository;
     private final PlantRepository plantRepository;
+    private final PlantRecommendationService plantRecommendationService;
 
     public List<UserPlantResponse> getAllUserPlants(User user){
         List<UserPlant> userPlants = userPlantRepository.findByUser(user);
@@ -64,7 +63,7 @@ public class UserPlantService {
 
         UserPlant savedUserPlant = userPlantRepository.save(newUserPlant);
 
-        return  mapUserPlantToResponseDto(savedUserPlant);
+        return mapUserPlantToResponseDto(savedUserPlant);
     }
 
     @Transactional
@@ -132,7 +131,7 @@ public class UserPlantService {
         response.setContainerSize(userPlant.getContainerSize());
         response.setHasDrainage(userPlant.getHasDrainage());
         response.setPlantLocation(userPlant.getPlantLocation());
-
+        response.setPlantCareRecommendations(plantRecommendationService.addRecommendationsToPlant(userPlant));
         return response;
     }
 
