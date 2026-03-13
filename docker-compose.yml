@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: garden-db
+    environment:
+      POSTGRES_DB: mygardencare
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: garden-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/mygardencare
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_FLYWAY_URL: jdbc:postgresql://db:5432/mygardencare
+      SPRING_FLYWAY_USER: ${DB_USERNAME}
+      SPRING_FLYWAY_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
