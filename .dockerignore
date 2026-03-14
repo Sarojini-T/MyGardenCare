@@ -1,8 +1,5 @@
-target/*.jar
-!target/*.jar
-src/
+target/
 .git/
-.mvn/
-mvnw
-mvnw.cmd
-pom.xml
+.idea/
+.vscode/
+*.md
