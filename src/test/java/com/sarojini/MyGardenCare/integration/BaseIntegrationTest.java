@@ -3,18 +3,20 @@ package com.sarojini.MyGardenCare.integration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sarojini.MyGardenCare.dtos.AuthenticationResponseDto;
 import com.sarojini.MyGardenCare.dtos.UserCreateRequestDto;
+import com.sarojini.MyGardenCare.services.PlantRecommendationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(properties = {"SECRET_KEY=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970",
+@SpringBootTest(properties = {"SECRET_KEY=505E635266556A586E3272357538782F413F4428472B4B6250645367566B5970",
         "API_KEY_ID=dummy-permapeople-id",
         "API_KEY_SECRET=dummy-permapeople-secret"
 })
@@ -23,6 +25,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public abstract class BaseIntegrationTest {
     @Autowired
     protected MockMvc mockMvc;
+
+    @MockitoBean
+    protected PlantRecommendationService plantRecommendationService;
 
     protected ObjectMapper objectMapper = new ObjectMapper();
 
@@ -37,7 +42,7 @@ public abstract class BaseIntegrationTest {
         String response = mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createReq)))
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.token").exists())
                 .andReturn()
                 .getResponse()
