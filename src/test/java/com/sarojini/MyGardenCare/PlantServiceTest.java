@@ -1,7 +1,7 @@
 package com.sarojini.MyGardenCare;
 
 import com.sarojini.MyGardenCare.dtos.PlantApiDto;
-import com.sarojini.MyGardenCare.dtos.PlantResponse;
+import com.sarojini.MyGardenCare.dtos.PlantResponseDto;
 import com.sarojini.MyGardenCare.entities.Plant;
 import com.sarojini.MyGardenCare.exceptions.ConflictException;
 import com.sarojini.MyGardenCare.repositories.PlantRepository;
@@ -51,7 +51,7 @@ public class PlantServiceTest {
     void getPlantById_Success(){
         when(plantRepository.findById(1L)).thenReturn(Optional.of(mockPlant));
 
-        PlantResponse response = plantService.getPlantById(1L);
+        PlantResponseDto response = plantService.getPlantById(1L);
 
         assertNotNull(response);
         assertEquals("Tomato", response.getCommonName());
@@ -71,7 +71,7 @@ public class PlantServiceTest {
     void getPlantByName_Success_WhenPlantFoundInDB(){
         when(plantRepository.searchByAnyName("Tomato")).thenReturn(List.of(mockPlant));
 
-        PlantResponse response = plantService.getPlantByName("Tomato");
+        PlantResponseDto response = plantService.getPlantByName("Tomato");
 
         assertNotNull(response);
         assertEquals("Tomato", response.getCommonName());
@@ -87,7 +87,7 @@ public class PlantServiceTest {
         when(plantRepository.findByScientificNameIgnoreCase("Solanum lycopersicum")).thenReturn(Optional.empty());
         when(plantRepository.save(any(Plant.class))).thenAnswer(i -> i.getArgument(0));
 
-        PlantResponse response = plantService.getPlantByName("Tomato");
+        PlantResponseDto response = plantService.getPlantByName("Tomato");
 
         assertNotNull(response);
         assertEquals("Tomato", response.getCommonName());
@@ -134,7 +134,7 @@ public class PlantServiceTest {
         when(plantRepository.existsByScientificNameIgnoreCase(anyString())).thenReturn(false);
         when(plantRepository.save(any(Plant.class))).thenAnswer(i -> i.getArgument(0));
 
-        PlantResponse response = plantService.addPlant(mockPlantApiDto);
+        PlantResponseDto response = plantService.addPlant(mockPlantApiDto);
 
         assertNotNull(response);
         assertEquals("Solanum lycopersicum", response.getScientificName());
@@ -155,7 +155,7 @@ public class PlantServiceTest {
         when(plantRepository.existsByScientificNameIgnoreCase(anyString())).thenReturn(false);
         when(plantRepository.save(any(Plant.class))).thenAnswer(i -> i.getArgument(0));
 
-        PlantResponse response = plantService.addPlant(mockPlantApiDto);
+        PlantResponseDto response = plantService.addPlant(mockPlantApiDto);
 
         assertNotNull(response);
         assertEquals("Solanum lycopersicum", response.getScientificName());

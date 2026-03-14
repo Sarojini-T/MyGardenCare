@@ -1,8 +1,8 @@
 package com.sarojini.MyGardenCare.services;
 
-import com.sarojini.MyGardenCare.dtos.AuthenticationRequest;
-import com.sarojini.MyGardenCare.dtos.AuthenticationResponse;
-import com.sarojini.MyGardenCare.dtos.UserCreateRequest;
+import com.sarojini.MyGardenCare.dtos.AuthenticationRequestDto;
+import com.sarojini.MyGardenCare.dtos.AuthenticationResponseDto;
+import com.sarojini.MyGardenCare.dtos.UserCreateRequestDto;
 import com.sarojini.MyGardenCare.entities.User;
 import com.sarojini.MyGardenCare.repositories.UserRepository;
 import com.sarojini.MyGardenCare.config.JwtService;
@@ -19,16 +19,16 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationResponse register (UserCreateRequest createReq){
+    public AuthenticationResponseDto register (UserCreateRequestDto createReq){
         userService.createNewUser(createReq);
 
         User savedUser = userRepository.findByUsernameIgnoreCase(createReq.getUsername()).get();
 
         String jwtToken = jwtService.generateToken(savedUser);
-        return AuthenticationResponse.builder().token(jwtToken).build();
+        return AuthenticationResponseDto.builder().token(jwtToken).build();
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest authReq){
+    public AuthenticationResponseDto authenticate(AuthenticationRequestDto authReq){
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         authReq.getUsername(),
@@ -39,6 +39,6 @@ public class AuthenticationService {
         User user = userRepository.findByUsernameIgnoreCase(authReq.getUsername()).get();
 
         String jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder().token(jwtToken).build();
+        return AuthenticationResponseDto.builder().token(jwtToken).build();
     }
 }

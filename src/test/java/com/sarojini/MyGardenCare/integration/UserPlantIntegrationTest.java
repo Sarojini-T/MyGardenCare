@@ -1,6 +1,6 @@
 package com.sarojini.MyGardenCare.integration;
 
-import com.sarojini.MyGardenCare.dtos.UserPlantCreateRequest;
+import com.sarojini.MyGardenCare.dtos.UserPlantCreateRequestDto;
 import com.sarojini.MyGardenCare.entities.Plant;
 import com.sarojini.MyGardenCare.repositories.PlantRepository;
 import com.sarojini.MyGardenCare.enums.PlantContainer;
@@ -24,7 +24,7 @@ public class UserPlantIntegrationTest extends BaseIntegrationTest {
 
         String token = registerUserAndGetToken();
 
-        UserPlantCreateRequest createReq = new UserPlantCreateRequest();
+        UserPlantCreateRequestDto createReq = new UserPlantCreateRequestDto();
         createReq.setPlantId(1L);
         createReq.setNickname("Tomato");
         createReq.setPlantContainer(PlantContainer.POT);

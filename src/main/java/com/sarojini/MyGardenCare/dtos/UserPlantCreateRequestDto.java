@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
-public class UserPlantCreateRequest {
+public class UserPlantCreateRequestDto {
     @NotNull(message = "Plant id cannot be null")
     @Schema(example = "1")
     private Long plantId;

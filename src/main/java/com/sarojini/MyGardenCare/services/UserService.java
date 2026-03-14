@@ -1,8 +1,8 @@
 package com.sarojini.MyGardenCare.services;
 
-import com.sarojini.MyGardenCare.dtos.UserCreateRequest;
-import com.sarojini.MyGardenCare.dtos.UserResponse;
-import com.sarojini.MyGardenCare.dtos.UserUpdateRequest;
+import com.sarojini.MyGardenCare.dtos.UserCreateRequestDto;
+import com.sarojini.MyGardenCare.dtos.UserResponseDto;
+import com.sarojini.MyGardenCare.dtos.UserUpdateRequestDto;
 import com.sarojini.MyGardenCare.entities.User;
 import com.sarojini.MyGardenCare.exceptions.ConflictException;
 import com.sarojini.MyGardenCare.repositories.UserRepository;
@@ -23,41 +23,41 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public List<UserResponse> getAllUsers(){
+    public List<UserResponseDto> getAllUsers(){
         Iterable<User> allUsers = userRepository.findAll();
 
-        List<UserResponse> userResponses = new ArrayList<>();
+        List<UserResponseDto> userResponseDtos = new ArrayList<>();
         for(User user : allUsers){
-            userResponses.add(mapUserToUserResponse(user));
+            userResponseDtos.add(mapUserToUserResponseDto(user));
         }
-        return userResponses;
+        return userResponseDtos;
     }
 
-    public UserResponse getUserById(Long id){
+    public UserResponseDto getUserById(Long id){
         User userById = getUserByIdHelper(id);
-        return mapUserToUserResponse(userById);
+        return mapUserToUserResponseDto(userById);
     }
 
-    public UserResponse getUserByUsername(String username){
+    public UserResponseDto getUserByUsername(String username){
         Optional<User> userByUsernameOptional = userRepository.findByUsernameIgnoreCase(username);
         if(userByUsernameOptional.isEmpty()) throw new EntityNotFoundException("User " + username + " not found");
-        return mapUserToUserResponse(userByUsernameOptional.get());
+        return mapUserToUserResponseDto(userByUsernameOptional.get());
     }
 
-    public UserResponse createNewUser(UserCreateRequest userCreateReq){
+    public UserResponseDto createNewUser(UserCreateRequestDto userCreateReq){
         String username = userCreateReq.getUsername().trim();
         String email = userCreateReq.getEmail().trim();
         validateUsernameAndEmail(username, email, null);
 
         userCreateReq.setUsername(username);
         userCreateReq.setEmail(email);
-        User newUser = mapUserCreateReqToUser(userCreateReq);
+        User newUser = mapUserCreateReqDtoToUser(userCreateReq);
         User savedUser = userRepository.save(newUser);
-        return mapUserToUserResponse(savedUser);
+        return mapUserToUserResponseDto(savedUser);
     }
 
     @Transactional
-    public UserResponse updateMyProfile(String username, UserUpdateRequest userUpdateReq){
+    public UserResponseDto updateMyProfile(String username, UserUpdateRequestDto userUpdateReq){
         User userToUpdate = getUserByUsernameHelper(username);
 
         String normalizedUsername = StringUtils.hasText(userUpdateReq.getUsername()) ? userUpdateReq.getUsername().trim() : null;
@@ -71,7 +71,7 @@ public class UserService {
 
         userRepository.save(userToUpdate);
 
-        return mapUserToUserResponse(userToUpdate);
+        return mapUserToUserResponseDto(userToUpdate);
     }
 
     public void deleteById(Long id){
@@ -97,16 +97,16 @@ public class UserService {
         return userByUsernameOptional.get();
     }
 
-    private UserResponse mapUserToUserResponse(User user){
+    private UserResponseDto mapUserToUserResponseDto(User user){
         Long id = user.getId();
         String username = user.getUsername();
         String email = user.getEmail();
         String zipcode = user.getZipcode();
 
-        return new UserResponse(id, username, email, zipcode);
+        return new UserResponseDto(id, username, email, zipcode);
     }
 
-    private User mapUserCreateReqToUser(UserCreateRequest userCreateReq){
+    private User mapUserCreateReqDtoToUser(UserCreateRequestDto userCreateReq){
         String username = userCreateReq.getUsername();
         String email = userCreateReq.getEmail();
         String encodedPassword = passwordEncoder.encode(userCreateReq.getPassword());

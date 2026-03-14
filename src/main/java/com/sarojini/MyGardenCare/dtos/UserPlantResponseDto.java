@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class UserPlantResponse {
+public class UserPlantResponseDto {
     @Schema(example = "1")
     private Long userPlantId;
 

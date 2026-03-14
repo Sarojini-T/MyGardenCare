@@ -1,8 +1,8 @@
 package com.sarojini.MyGardenCare.services;
 
-import com.sarojini.MyGardenCare.dtos.UserPlantCreateRequest;
-import com.sarojini.MyGardenCare.dtos.UserPlantResponse;
-import com.sarojini.MyGardenCare.dtos.UserPlantUpdateRequest;
+import com.sarojini.MyGardenCare.dtos.UserPlantCreateRequestDto;
+import com.sarojini.MyGardenCare.dtos.UserPlantResponseDto;
+import com.sarojini.MyGardenCare.dtos.UserPlantUpdateRequestDto;
 import com.sarojini.MyGardenCare.entities.Plant;
 import com.sarojini.MyGardenCare.entities.User;
 import com.sarojini.MyGardenCare.entities.UserPlant;
@@ -16,7 +16,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import com.sarojini.MyGardenCare.enums.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,12 +29,12 @@ public class UserPlantService {
     private final PlantRepository plantRepository;
     private final PlantRecommendationService plantRecommendationService;
 
-    public List<UserPlantResponse> getAllUserPlants(User user){
+    public List<UserPlantResponseDto> getAllUserPlants(User user){
         List<UserPlant> userPlants = userPlantRepository.findByUser(user);
         return userPlantListToResponse(userPlants);
     }
 
-    public List<UserPlantResponse> getAllUserPlantsByPlantName(User user, String plantName){
+    public List<UserPlantResponseDto> getAllUserPlantsByPlantName(User user, String plantName){
         Plant plant = getPlantByPlantName(plantName);
         List<UserPlant> userPlants = userPlantRepository.findByUserAndPlantId(user, plant.getId());
 
@@ -43,13 +42,13 @@ public class UserPlantService {
     }
 
 
-    public UserPlantResponse getUserPlantById(Long id, User user){
+    public UserPlantResponseDto getUserPlantById(Long id, User user){
         UserPlant userPlantById = getUserPlantByIdAndUser(id, user);
         return mapUserPlantToResponseDto(userPlantById);
     }
 
 
-    public UserPlantResponse createUserPlant(User user, UserPlantCreateRequest createReq){
+    public UserPlantResponseDto createUserPlant(User user, UserPlantCreateRequestDto createReq){
         String nickname = createReq.getNickname();
         PlantContainer plantContainer = createReq.getPlantContainer();
         PlantLocation plantLocation = createReq.getPlantLocation();
@@ -67,7 +66,7 @@ public class UserPlantService {
     }
 
     @Transactional
-    public UserPlantResponse updateUserPlantById(User user, Long id, UserPlantUpdateRequest updateReq){
+    public UserPlantResponseDto updateUserPlantById(User user, Long id, UserPlantUpdateRequestDto updateReq){
         UserPlant userPlantToUpdate =  getUserPlantByIdAndUser(id, user);
 
         PlantContainer plantContainer = updateReq.getPlantContainer() != null ? updateReq.getPlantContainer() : userPlantToUpdate.getPlantContainer();
@@ -121,8 +120,8 @@ public class UserPlantService {
         return plantOptional.get();
     }
 
-    private UserPlantResponse mapUserPlantToResponseDto(UserPlant userPlant){
-        UserPlantResponse response = new UserPlantResponse();
+    private UserPlantResponseDto mapUserPlantToResponseDto(UserPlant userPlant){
+        UserPlantResponseDto response = new UserPlantResponseDto();
         response.setUserPlantId(userPlant.getId());
         response.setPlantId(userPlant.getPlant().getId());
         response.setPlantName(userPlant.getPlant().getCommonName());
@@ -135,7 +134,7 @@ public class UserPlantService {
         return response;
     }
 
-    private UserPlant mapCreateReqDtoToUserPlant(User user, UserPlantCreateRequest createReq){
+    private UserPlant mapCreateReqDtoToUserPlant(User user, UserPlantCreateRequestDto createReq){
         String nickname = createReq.getNickname();
         Plant plant = getPlantById(createReq.getPlantId());
         PlantContainer plantContainer = createReq.getPlantContainer();
@@ -150,12 +149,12 @@ public class UserPlantService {
         return newUserPlant;
     }
 
-    private List<UserPlantResponse> userPlantListToResponse(List<UserPlant> userPlants){
-        List<UserPlantResponse> userPlantResponseList = new ArrayList<>();
+    private List<UserPlantResponseDto> userPlantListToResponse(List<UserPlant> userPlants){
+        List<UserPlantResponseDto> userPlantResponseDtoList = new ArrayList<>();
         for(UserPlant userPlant : userPlants){
-            userPlantResponseList.add(mapUserPlantToResponseDto(userPlant));
+            userPlantResponseDtoList.add(mapUserPlantToResponseDto(userPlant));
         }
-        return userPlantResponseList;
+        return userPlantResponseDtoList;
     }
 
     public void validateReqAgainstPlantContainerRules(PlantContainer plantContainer,

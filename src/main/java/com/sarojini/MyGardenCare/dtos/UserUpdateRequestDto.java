@@ -2,12 +2,11 @@ package com.sarojini.MyGardenCare.dtos;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
-public class UserUpdateRequest {
+public class UserUpdateRequestDto {
     @Schema(example = "Anna02")
     private String username;
 

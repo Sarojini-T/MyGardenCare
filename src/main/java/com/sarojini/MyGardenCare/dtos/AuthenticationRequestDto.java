@@ -10,7 +10,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthenticationResponse {
-    @Schema(description = "Generated JWT")
-    private String token;
+public class AuthenticationRequestDto {
+    @Schema(example = "Anna")
+    private String username;
+
+    @Schema(example = "123")
+    private String password;
 }

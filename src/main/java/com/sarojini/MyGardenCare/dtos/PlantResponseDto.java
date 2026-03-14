@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class PlantResponse {
+public class PlantResponseDto {
     @Schema(example = "1")
     private Long id;
 

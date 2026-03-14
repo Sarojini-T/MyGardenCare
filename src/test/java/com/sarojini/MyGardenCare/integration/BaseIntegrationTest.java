@@ -1,8 +1,8 @@
 package com.sarojini.MyGardenCare.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sarojini.MyGardenCare.dtos.AuthenticationResponse;
-import com.sarojini.MyGardenCare.dtos.UserCreateRequest;
+import com.sarojini.MyGardenCare.dtos.AuthenticationResponseDto;
+import com.sarojini.MyGardenCare.dtos.UserCreateRequestDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -28,7 +28,7 @@ public abstract class BaseIntegrationTest {
 
 
     protected String registerUserAndGetToken() throws Exception{
-        UserCreateRequest createReq = new UserCreateRequest();
+        UserCreateRequestDto createReq = new UserCreateRequestDto();
         createReq.setUsername("user" + System.currentTimeMillis());
         createReq.setEmail("user" + System.currentTimeMillis() + "@gmail.com");
         createReq.setPassword("123");
@@ -43,7 +43,7 @@ public abstract class BaseIntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        AuthenticationResponse authResp = objectMapper.readValue(response, AuthenticationResponse.class);
+        AuthenticationResponseDto authResp = objectMapper.readValue(response, AuthenticationResponseDto.class);
         return "Bearer " + authResp.getToken();
     }
 }

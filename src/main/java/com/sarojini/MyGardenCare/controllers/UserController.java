@@ -1,7 +1,7 @@
 package com.sarojini.MyGardenCare.controllers;
 import com.sarojini.MyGardenCare.dtos.ApiErrorSchemaDto;
-import com.sarojini.MyGardenCare.dtos.UserResponse;
-import com.sarojini.MyGardenCare.dtos.UserUpdateRequest;
+import com.sarojini.MyGardenCare.dtos.UserResponseDto;
+import com.sarojini.MyGardenCare.dtos.UserUpdateRequestDto;
 import com.sarojini.MyGardenCare.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -35,7 +35,7 @@ public class UserController {
     @Operation(summary = "Admin-only: get a list of all users",
     responses = {
             @ApiResponse(responseCode = "200", description = "All users returned",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponse.class)))),
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserResponseDto.class)))),
 
             @ApiResponse(responseCode = "403", description = "Must be an admin to see all users",
             content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class),
@@ -44,7 +44,7 @@ public class UserController {
     errors : null }""")}))
 
     })
-    public ResponseEntity<List<UserResponse>> getAllUsers(){
+    public ResponseEntity<List<UserResponseDto>> getAllUsers(){
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
@@ -53,7 +53,7 @@ public class UserController {
     @Operation(summary = "Admin-only: get a user by their id",
             responses = {
                     @ApiResponse(responseCode = "200", description = "User found and returned successfully",
-                            content = @Content(schema = @Schema(implementation = UserResponse.class))),
+                            content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
 
                     @ApiResponse(responseCode = "404", description = "User not found",
                             content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class),
@@ -67,7 +67,7 @@ public class UserController {
             { message : Access denied,
             errors : null }""")}))
             })
-    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id){
+    public ResponseEntity<UserResponseDto> getUserById(@PathVariable Long id){
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
@@ -99,9 +99,9 @@ public class UserController {
     @GetMapping("/me")
     @Operation(summary = "Get current user's profile information",
     responses = {
-            @ApiResponse(responseCode = "200", description = "Current user's information found", content = @Content(schema = @Schema(implementation = UserResponse.class)))
+            @ApiResponse(responseCode = "200", description = "Current user's information found", content = @Content(schema = @Schema(implementation = UserResponseDto.class)))
     })
-    public ResponseEntity<UserResponse> getMyProfile(Principal principal){
+    public ResponseEntity<UserResponseDto> getMyProfile(Principal principal){
         return ResponseEntity.ok(userService.getUserByUsername(principal.getName()));
     }
 
@@ -109,7 +109,7 @@ public class UserController {
     @Operation(summary = "Update the current user's profile information",
     responses = {
             @ApiResponse(responseCode = "200", description = "User updated successfully",
-            content = @Content(schema = @Schema(implementation = UserResponse.class))),
+            content = @Content(schema = @Schema(implementation = UserResponseDto.class))),
 
             @ApiResponse(responseCode = "409", description = "One updated field makes this user a duplicate",
             content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class),
@@ -119,10 +119,10 @@ public class UserController {
     errors: null
     }""")}))
     })
-   public ResponseEntity<UserResponse> updateMyProfile(Principal principal,
-                                                       @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Fields to update for current user", required = true)
-                                                      @Valid @RequestBody UserUpdateRequest userUpdateReq){
-        UserResponse updatedUserById =  userService.updateMyProfile(principal.getName(), userUpdateReq);
+   public ResponseEntity<UserResponseDto> updateMyProfile(Principal principal,
+                                                          @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Fields to update for current user", required = true)
+                                                      @Valid @RequestBody UserUpdateRequestDto userUpdateReq){
+        UserResponseDto updatedUserById =  userService.updateMyProfile(principal.getName(), userUpdateReq);
         return ResponseEntity.ok(updatedUserById);
    }
 

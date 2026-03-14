@@ -6,7 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-public class UserPlantUpdateRequest {
+public class UserPlantUpdateRequestDto {
     @Schema(example = "tomato2")
     private String nickname;
 

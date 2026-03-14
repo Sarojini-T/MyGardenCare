@@ -1,19 +1,20 @@
 package com.sarojini.MyGardenCare.dtos;
-
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @AllArgsConstructor
-@NoArgsConstructor
-public class AuthenticationRequest {
+public class UserResponseDto {
+    @Schema(example = "1")
+    private Long id;
+
     @Schema(example = "Anna")
     private String username;
 
-    @Schema(example = "123")
-    private String password;
+    @Schema(example = "anna@gmail.com")
+    private String email;
+
+    @Schema(example = "01234")
+    private String zipcode;
 }

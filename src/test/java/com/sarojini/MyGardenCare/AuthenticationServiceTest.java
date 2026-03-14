@@ -1,9 +1,9 @@
 package com.sarojini.MyGardenCare;
 
 import com.sarojini.MyGardenCare.config.JwtService;
-import com.sarojini.MyGardenCare.dtos.AuthenticationRequest;
-import com.sarojini.MyGardenCare.dtos.AuthenticationResponse;
-import com.sarojini.MyGardenCare.dtos.UserCreateRequest;
+import com.sarojini.MyGardenCare.dtos.AuthenticationRequestDto;
+import com.sarojini.MyGardenCare.dtos.AuthenticationResponseDto;
+import com.sarojini.MyGardenCare.dtos.UserCreateRequestDto;
 
 import com.sarojini.MyGardenCare.entities.User;
 import com.sarojini.MyGardenCare.repositories.UserRepository;
@@ -52,7 +52,7 @@ public class AuthenticationServiceTest {
 
     @Test
     void register_ReturnsJwtToken_Success(){
-        UserCreateRequest createReq = new UserCreateRequest();
+        UserCreateRequestDto createReq = new UserCreateRequestDto();
         createReq.setUsername("user1");
         createReq.setEmail("user1@gmail.com");
         createReq.setPassword("123");
@@ -62,7 +62,7 @@ public class AuthenticationServiceTest {
         when(userRepository.findByUsernameIgnoreCase("user1")).thenReturn(Optional.of(mockUser));
         when(jwtService.generateToken(mockUser)).thenReturn(expectedJwt);
 
-        AuthenticationResponse authResponse = authenticationService.register(createReq);
+        AuthenticationResponseDto authResponse = authenticationService.register(createReq);
 
         assertNotNull(authResponse);
         assertEquals(expectedJwt, authResponse.getToken());
@@ -74,13 +74,13 @@ public class AuthenticationServiceTest {
 
     @Test
     void authenticate_ReturnJwtToken_WhenCredentialsAreValid(){
-        AuthenticationRequest authReq = new AuthenticationRequest("user1", "123");
+        AuthenticationRequestDto authReq = new AuthenticationRequestDto("user1", "123");
         String expectedJwt = "1.2.3";
 
         when(userRepository.findByUsernameIgnoreCase(mockUser.getUsername())).thenReturn(Optional.of(mockUser));
         when(jwtService.generateToken(mockUser)).thenReturn(expectedJwt);
 
-        AuthenticationResponse authResp = authenticationService.authenticate(authReq);
+        AuthenticationResponseDto authResp = authenticationService.authenticate(authReq);
 
         assertNotNull(authResp);
         assertEquals(expectedJwt, authResp.getToken());
@@ -90,7 +90,7 @@ public class AuthenticationServiceTest {
 
     @Test
     void authenticate_ThrowsBadCredentialsException_WhenCredentialsAreInvalid(){
-        AuthenticationRequest authReq = new AuthenticationRequest("user1", "123");
+        AuthenticationRequestDto authReq = new AuthenticationRequestDto("user1", "123");
 
         doThrow(new BadCredentialsException("Credentials are invalid"))
                 .when(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));

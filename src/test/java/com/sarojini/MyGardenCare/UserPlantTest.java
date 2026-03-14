@@ -1,8 +1,8 @@
 package com.sarojini.MyGardenCare;
 
-import com.sarojini.MyGardenCare.dtos.UserPlantCreateRequest;
-import com.sarojini.MyGardenCare.dtos.UserPlantResponse;
-import com.sarojini.MyGardenCare.dtos.UserPlantUpdateRequest;
+import com.sarojini.MyGardenCare.dtos.UserPlantCreateRequestDto;
+import com.sarojini.MyGardenCare.dtos.UserPlantResponseDto;
+import com.sarojini.MyGardenCare.dtos.UserPlantUpdateRequestDto;
 import com.sarojini.MyGardenCare.entities.Plant;
 import com.sarojini.MyGardenCare.entities.User;
 import com.sarojini.MyGardenCare.entities.UserPlant;
@@ -58,12 +58,12 @@ public class UserPlantTest {
 
         when(userPlantRepository.findByUser(user)).thenReturn(mockUserPlantList);
 
-        List<UserPlantResponse> userPlantResponseList = userPlantService.getAllUserPlants(user);
+        List<UserPlantResponseDto> userPlantResponseDtoList = userPlantService.getAllUserPlants(user);
 
-        assertNotNull(userPlantResponseList);
-        assertEquals(2, userPlantResponseList.size());
-        assertEquals("Tomato", userPlantResponseList.get(0).getNickname());
-        assertEquals("Lily", userPlantResponseList.get(1).getNickname());
+        assertNotNull(userPlantResponseDtoList);
+        assertEquals(2, userPlantResponseDtoList.size());
+        assertEquals("Tomato", userPlantResponseDtoList.get(0).getNickname());
+        assertEquals("Lily", userPlantResponseDtoList.get(1).getNickname());
 
         verify(userPlantRepository, times(1)).findByUser(user);
     }
@@ -80,12 +80,12 @@ public class UserPlantTest {
         when(plantRepository.findByCommonName("Heirloom Tomato")).thenReturn(Optional.of(tomatoPlant));
         when(userPlantRepository.findByUserAndPlantId(user,1L)).thenReturn(mockUserPlantList);
 
-        List<UserPlantResponse> userPlantResponseList = userPlantService.getAllUserPlantsByPlantName(user, "Heirloom Tomato");
+        List<UserPlantResponseDto> userPlantResponseDtoList = userPlantService.getAllUserPlantsByPlantName(user, "Heirloom Tomato");
 
-        assertNotNull(userPlantResponseList);
-        assertEquals(2, userPlantResponseList.size());
-        assertEquals("Tomato1", userPlantResponseList.get(0).getNickname());
-        assertEquals("Tomato2", userPlantResponseList.get(1).getNickname());
+        assertNotNull(userPlantResponseDtoList);
+        assertEquals(2, userPlantResponseDtoList.size());
+        assertEquals("Tomato1", userPlantResponseDtoList.get(0).getNickname());
+        assertEquals("Tomato2", userPlantResponseDtoList.get(1).getNickname());
 
         verify(userPlantRepository, times(1)).findByUserAndPlantId(user, 1L);
     }
@@ -107,10 +107,10 @@ public class UserPlantTest {
 
         when(userPlantRepository.findByIdAndUser(1L, user)).thenReturn(Optional.of(tomatoUserPlant));
 
-        UserPlantResponse userPlantResponse = userPlantService.getUserPlantById(1L, user);
+        UserPlantResponseDto userPlantResponseDto = userPlantService.getUserPlantById(1L, user);
 
-        assertNotNull(userPlantResponse);
-        assertEquals(1L, userPlantResponse.getUserPlantId());
+        assertNotNull(userPlantResponseDto);
+        assertEquals(1L, userPlantResponseDto.getUserPlantId());
 
         verify(userPlantRepository, times(1)).findByIdAndUser(1L, user);
     }
@@ -128,22 +128,22 @@ public class UserPlantTest {
     public void createUserPlant_Success(){
         Plant tomatoPlant = createPlant("Heirloom Tomato", "Solanum lycopersicum", 1L);
 
-        UserPlantCreateRequest createReq = getUserPlantCreateRequest(1L, "Tomato", PlantContainer.POT, PlantLocation.INDOOR);
+        UserPlantCreateRequestDto createReq = getUserPlantCreateRequest(1L, "Tomato", PlantContainer.POT, PlantLocation.INDOOR);
 
         when(plantRepository.findById(1L)).thenReturn(Optional.of(tomatoPlant));
         when(userPlantRepository.save(any(UserPlant.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserPlantResponse userPlantResponse = userPlantService.createUserPlant(user, createReq);
+        UserPlantResponseDto userPlantResponseDto = userPlantService.createUserPlant(user, createReq);
 
-        assertNotNull(userPlantResponse);
-        assertEquals("Tomato", userPlantResponse.getNickname());
+        assertNotNull(userPlantResponseDto);
+        assertEquals("Tomato", userPlantResponseDto.getNickname());
 
         verify(userPlantRepository, times(1)).save(any(UserPlant.class));
     }
 
     @Test
     public void createUserPlant_ThrowsEntityNotFoundException_WhenPlantNotFound(){
-        UserPlantCreateRequest createReq = getUserPlantCreateRequest(1L, "Tomato", PlantContainer.POT, PlantLocation.INDOOR);
+        UserPlantCreateRequestDto createReq = getUserPlantCreateRequest(1L, "Tomato", PlantContainer.POT, PlantLocation.INDOOR);
 
         when(plantRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -156,7 +156,7 @@ public class UserPlantTest {
     public void createUserPlant_ThrowsIllegalArgumentException_WhenNicknameIsBlank(){
         Plant tomatoPlant = createPlant("Heirloom Tomato", "Solanum lycopersicum", 1L);
 
-        UserPlantCreateRequest createReq = getUserPlantCreateRequest(1L, "", PlantContainer.POT, PlantLocation.INDOOR);
+        UserPlantCreateRequestDto createReq = getUserPlantCreateRequest(1L, "", PlantContainer.POT, PlantLocation.INDOOR);
 
         when(plantRepository.findById(1L)).thenReturn(Optional.of(tomatoPlant));
 
@@ -170,7 +170,7 @@ public class UserPlantTest {
     public void createUserPlant_ThrowsConflictException_WhenNicknameIsDuplicate(){
         Plant tomatoPlant = createPlant("Heirloom Tomato", "Solanum lycopersicum", 1L);
 
-        UserPlantCreateRequest createReq = getUserPlantCreateRequest(1L, "Tomato", PlantContainer.POT, PlantLocation.OUTDOOR);
+        UserPlantCreateRequestDto createReq = getUserPlantCreateRequest(1L, "Tomato", PlantContainer.POT, PlantLocation.OUTDOOR);
 
         when(userPlantRepository.existsByUserAndNicknameIgnoreCase(user,"Tomato")).thenReturn(true);
         when(plantRepository.findById(1L)).thenReturn(Optional.of(tomatoPlant));
@@ -184,7 +184,7 @@ public class UserPlantTest {
     public void createUserPlant_ThrowsIllegalArgumentException_WhenPlantContainerRulesViolated(){
         Plant tomatoPlant = createPlant("Heirloom Tomato", "Solanum lycopersicum", 1L);
 
-        UserPlantCreateRequest createReq = getUserPlantCreateRequest(1L, "Tomato", PlantContainer.OUTDOOR_GROUND, PlantLocation.INDOOR);
+        UserPlantCreateRequestDto createReq = getUserPlantCreateRequest(1L, "Tomato", PlantContainer.OUTDOOR_GROUND, PlantLocation.INDOOR);
         createReq.setContainerSize(ContainerSize.MEDIUM);
         createReq.setHasDrainage(true);
 
@@ -201,7 +201,7 @@ public class UserPlantTest {
 
         UserPlant existingUserPlant = createNewUserPlant("Tomato", user, tomatoPlant, PlantContainer.POT, PlantLocation.INDOOR, 1L);
 
-        UserPlantUpdateRequest updateReq = getUserPlantUpdateRequest(Optional.of("Tomato1"),
+        UserPlantUpdateRequestDto updateReq = getUserPlantUpdateRequest(Optional.of("Tomato1"),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.of(PlantLocation.OUTDOOR),
@@ -211,10 +211,10 @@ public class UserPlantTest {
         when(userPlantRepository.findByIdAndUser(1L, user)).thenReturn(Optional.of(existingUserPlant));
         when(userPlantRepository.existsByUserAndNicknameIgnoreCase(user, "Tomato1")).thenReturn(false);
 
-        UserPlantResponse userPlantResponse = userPlantService.updateUserPlantById(user, 1L, updateReq);
+        UserPlantResponseDto userPlantResponseDto = userPlantService.updateUserPlantById(user, 1L, updateReq);
 
-        assertNotNull(userPlantResponse);
-        assertEquals("Tomato1", userPlantResponse.getNickname());
+        assertNotNull(userPlantResponseDto);
+        assertEquals("Tomato1", userPlantResponseDto.getNickname());
 
         verify(userPlantRepository, times(1)).findByIdAndUser(1L, user);
         verify(userPlantRepository, times(1)).existsByUserAndNicknameIgnoreCase(user, "Tomato1");
@@ -228,7 +228,7 @@ public class UserPlantTest {
         existingUserPlant.setContainerSize(ContainerSize.MEDIUM);
         existingUserPlant.setHasDrainage(true);
 
-        UserPlantUpdateRequest updateReq = getUserPlantUpdateRequest(Optional.empty(),
+        UserPlantUpdateRequestDto updateReq = getUserPlantUpdateRequest(Optional.empty(),
                 Optional.empty(),
                 Optional.of(PlantContainer.OUTDOOR_GROUND),
                 Optional.empty(),
@@ -237,11 +237,11 @@ public class UserPlantTest {
 
         when(userPlantRepository.findByIdAndUser(1l, user)).thenReturn(Optional.of(existingUserPlant));
 
-        UserPlantResponse userPlantResponse = userPlantService.updateUserPlantById(user, 1L, updateReq);
+        UserPlantResponseDto userPlantResponseDto = userPlantService.updateUserPlantById(user, 1L, updateReq);
 
-        assertNull(userPlantResponse.getContainerSize());
-        assertNull(userPlantResponse.getHasDrainage());
-        assertEquals(PlantLocation.OUTDOOR, userPlantResponse.getPlantLocation());
+        assertNull(userPlantResponseDto.getContainerSize());
+        assertNull(userPlantResponseDto.getHasDrainage());
+        assertEquals(PlantLocation.OUTDOOR, userPlantResponseDto.getPlantLocation());
 
         verify(userPlantRepository, times(1)).findByIdAndUser(1l, user);
 
@@ -253,7 +253,7 @@ public class UserPlantTest {
 
         UserPlant existingUserPlant = createNewUserPlant("Tomato", user, tomatoPlant, PlantContainer.POT, PlantLocation.INDOOR, 1L);
 
-        UserPlantUpdateRequest updateReq = getUserPlantUpdateRequest(Optional.empty(),
+        UserPlantUpdateRequestDto updateReq = getUserPlantUpdateRequest(Optional.empty(),
                 Optional.empty(),
                 Optional.of(PlantContainer.OUTDOOR_GROUND),
                 Optional.of(PlantLocation.INDOOR),
@@ -301,9 +301,9 @@ public class UserPlantTest {
         return userPlant;
     }
 
-    private UserPlantCreateRequest getUserPlantCreateRequest(Long id, String nickname, PlantContainer plantContainer,
-                                                             PlantLocation plantLocation){
-        UserPlantCreateRequest createReq = new UserPlantCreateRequest();
+    private UserPlantCreateRequestDto getUserPlantCreateRequest(Long id, String nickname, PlantContainer plantContainer,
+                                                                PlantLocation plantLocation){
+        UserPlantCreateRequestDto createReq = new UserPlantCreateRequestDto();
         createReq.setPlantId(id);
         createReq.setNickname(nickname);
         createReq.setPlantContainer(plantContainer);
@@ -312,12 +312,12 @@ public class UserPlantTest {
         return createReq;
     }
 
-    private UserPlantUpdateRequest getUserPlantUpdateRequest(Optional<String> updatedNickname,
-                                                             Optional<String> updatedPlantName,
-                                                             Optional<PlantContainer> updatedPlantContainer,
-                                                             Optional<PlantLocation> updatedPlantLocation,
-                                                             Optional<ContainerSize> updatedContainerSize,
-                                                             Optional<Boolean> updatedHasDrainage){
+    private UserPlantUpdateRequestDto getUserPlantUpdateRequest(Optional<String> updatedNickname,
+                                                                Optional<String> updatedPlantName,
+                                                                Optional<PlantContainer> updatedPlantContainer,
+                                                                Optional<PlantLocation> updatedPlantLocation,
+                                                                Optional<ContainerSize> updatedContainerSize,
+                                                                Optional<Boolean> updatedHasDrainage){
         String nickname = updatedNickname.isPresent() ? updatedNickname.get() : null;
         String plantName = updatedPlantName.isPresent() ? updatedPlantName.get() : null;
         PlantContainer plantContainer = updatedPlantContainer.isPresent() ? updatedPlantContainer.get() : null;
@@ -325,7 +325,7 @@ public class UserPlantTest {
         ContainerSize containerSize = updatedContainerSize.isPresent() ? updatedContainerSize.get() : null;
         Boolean hasDrainage = updatedHasDrainage.isPresent() ? updatedHasDrainage.get() : null;
 
-        UserPlantUpdateRequest updateReq = new UserPlantUpdateRequest();
+        UserPlantUpdateRequestDto updateReq = new UserPlantUpdateRequestDto();
         updateReq.setNickname(nickname);
         updateReq.setPlantName(plantName);
         updateReq.setPlantContainer(plantContainer);

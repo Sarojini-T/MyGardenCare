@@ -1,7 +1,7 @@
 package com.sarojini.MyGardenCare.controllers;
 import com.sarojini.MyGardenCare.dtos.ApiErrorSchemaDto;
 import com.sarojini.MyGardenCare.dtos.PlantApiDto;
-import com.sarojini.MyGardenCare.dtos.PlantResponse;
+import com.sarojini.MyGardenCare.dtos.PlantResponseDto;
 import com.sarojini.MyGardenCare.services.PlantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,7 +35,7 @@ public class PlantController {
     responses = {
             @ApiResponse(responseCode = "200",
                     description = "Plant found",
-            content = @Content(schema = @Schema(implementation = PlantResponse.class))),
+            content = @Content(schema = @Schema(implementation = PlantResponseDto.class))),
 
             @ApiResponse(responseCode = "404"
                     , description = "Plant does not exist in DB",
@@ -51,8 +51,8 @@ public class PlantController {
                     )
             }))
     })
-    public ResponseEntity<PlantResponse> getPlantById(@PathVariable Long id){
-        PlantResponse plantById = plantService.getPlantById(id);
+    public ResponseEntity<PlantResponseDto> getPlantById(@PathVariable Long id){
+        PlantResponseDto plantById = plantService.getPlantById(id);
         return ResponseEntity.ok(plantById);
     }
 
@@ -65,7 +65,7 @@ public class PlantController {
     responses = {
             @ApiResponse(responseCode = "200",
                     description = "Plant found",
-                    content = @Content(schema = @Schema(implementation = PlantResponse.class))),
+                    content = @Content(schema = @Schema(implementation = PlantResponseDto.class))),
 
             @ApiResponse(responseCode = "400",
                     description = "Bad plant request",
@@ -95,14 +95,14 @@ public class PlantController {
                             )
                     }))
     })
-    public ResponseEntity<PlantResponse> getPlantByName(
+    public ResponseEntity<PlantResponseDto> getPlantByName(
             @NotBlank(message = "Search query cannot be empty")
             @Size(min = 2, message = "Search query must be at least 2 characters")
             @Parameter(description = "Plant name to lookup", example = "tomato")
             @RequestParam(name = "query", required = true)
             String query) {
-        PlantResponse plantResponse = plantService.getPlantByName(query);
-        return ResponseEntity.ok(plantResponse);
+        PlantResponseDto plantResponseDto = plantService.getPlantByName(query);
+        return ResponseEntity.ok(plantResponseDto);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -112,7 +112,7 @@ public class PlantController {
     responses = {
             @ApiResponse(responseCode = "201",
                     description = "New plant added to DB",
-            content = @Content(schema = @Schema(implementation = PlantResponse.class))),
+            content = @Content(schema = @Schema(implementation = PlantResponseDto.class))),
 
             @ApiResponse(responseCode = "400", description = "API returned invalid data",
             content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class),
@@ -135,10 +135,10 @@ public class PlantController {
                     }""")}))
 
     })
-    public ResponseEntity<PlantResponse> addPlant(
+    public ResponseEntity<PlantResponseDto> addPlant(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Permapeople API data mapped to plants DB schema", required = true)
             @Valid @RequestBody PlantApiDto plantApiDto){
-        PlantResponse addedPlant = plantService.addPlant(plantApiDto);
+        PlantResponseDto addedPlant = plantService.addPlant(plantApiDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(addedPlant);
     }
 }

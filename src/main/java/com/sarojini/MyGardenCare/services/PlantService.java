@@ -2,7 +2,7 @@ package com.sarojini.MyGardenCare.services;
 
 import com.sarojini.MyGardenCare.services.externalAPI.ExternalPlantApiService;
 import com.sarojini.MyGardenCare.dtos.PlantApiDto;
-import com.sarojini.MyGardenCare.dtos.PlantResponse;
+import com.sarojini.MyGardenCare.dtos.PlantResponseDto;
 import com.sarojini.MyGardenCare.entities.Plant;
 import com.sarojini.MyGardenCare.exceptions.ConflictException;
 import com.sarojini.MyGardenCare.repositories.PlantRepository;
@@ -22,13 +22,13 @@ public class PlantService {
     private final PlantRepository plantRepository;
     private final ExternalPlantApiService externalPlantApiService;
 
-    public PlantResponse getPlantById(Long id){
+    public PlantResponseDto getPlantById(Long id){
         Optional<Plant> plantByIdOptional = plantRepository.findById(id);
         if(plantByIdOptional.isEmpty()) throw new EntityNotFoundException("Plant " + id + " not found");
         return mapPlantToPlantResponse(plantByIdOptional.get());
     }
 
-    public PlantResponse getPlantByName(String query){
+    public PlantResponseDto getPlantByName(String query){
         List<Plant> localPlants = plantRepository.searchByAnyName(query);
 
         if(!localPlants.isEmpty()){
@@ -66,7 +66,7 @@ public class PlantService {
         }
     }
 
-    public PlantResponse addPlant(PlantApiDto plantApiDto){
+    public PlantResponseDto addPlant(PlantApiDto plantApiDto){
         if(plantRepository.existsByScientificNameIgnoreCase(plantApiDto.getScientificName())){
             throw new ConflictException(plantApiDto.getScientificName() + " already exists");
         }
@@ -76,23 +76,23 @@ public class PlantService {
         return mapPlantToPlantResponse(savedPlant);
     }
 
-    public static PlantResponse mapPlantToPlantResponse(Plant plant){
-        PlantResponse newPlantResponse =  new PlantResponse();
+    public static PlantResponseDto mapPlantToPlantResponse(Plant plant){
+        PlantResponseDto newPlantResponseDto =  new PlantResponseDto();
 
-        newPlantResponse.setId(plant.getId());
-        newPlantResponse.setCommonName(plant.getCommonName());
-        newPlantResponse.setScientificName(plant.getScientificName());
+        newPlantResponseDto.setId(plant.getId());
+        newPlantResponseDto.setCommonName(plant.getCommonName());
+        newPlantResponseDto.setScientificName(plant.getScientificName());
 
-        if(StringUtils.hasText(plant.getAlternateNames())) newPlantResponse.setAlternateNames(plant.getAlternateNames());;
-        if(StringUtils.hasText(plant.getLightRequirement())) newPlantResponse.setLightRequirement(plant.getLightRequirement());
-        if(StringUtils.hasText(plant.getSoilType())) newPlantResponse.setSoilType(plant.getSoilType());
-        if(StringUtils.hasText(plant.getLifeCycle())) newPlantResponse.setLifeCycle(plant.getLifeCycle());
-        if(StringUtils.hasText(plant.getWaterRequirement())) newPlantResponse.setWaterRequirement(plant.getWaterRequirement());
-        if(plant.getHeightInMeters() != null) newPlantResponse.setHeightInMeters(plant.getHeightInMeters());
-        if(plant.getWidthInMeters() != null) newPlantResponse.setWidthInMeters(plant.getWidthInMeters());
-        if(StringUtils.hasText(plant.getGrowth())) newPlantResponse.setGrowth(plant.getGrowth());
+        if(StringUtils.hasText(plant.getAlternateNames())) newPlantResponseDto.setAlternateNames(plant.getAlternateNames());;
+        if(StringUtils.hasText(plant.getLightRequirement())) newPlantResponseDto.setLightRequirement(plant.getLightRequirement());
+        if(StringUtils.hasText(plant.getSoilType())) newPlantResponseDto.setSoilType(plant.getSoilType());
+        if(StringUtils.hasText(plant.getLifeCycle())) newPlantResponseDto.setLifeCycle(plant.getLifeCycle());
+        if(StringUtils.hasText(plant.getWaterRequirement())) newPlantResponseDto.setWaterRequirement(plant.getWaterRequirement());
+        if(plant.getHeightInMeters() != null) newPlantResponseDto.setHeightInMeters(plant.getHeightInMeters());
+        if(plant.getWidthInMeters() != null) newPlantResponseDto.setWidthInMeters(plant.getWidthInMeters());
+        if(StringUtils.hasText(plant.getGrowth())) newPlantResponseDto.setGrowth(plant.getGrowth());
 
-        return newPlantResponse;
+        return newPlantResponseDto;
     }
 
     public Plant mapPlantApiDtoToPlant(PlantApiDto plantApiDto){

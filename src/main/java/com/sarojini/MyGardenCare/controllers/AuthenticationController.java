@@ -1,9 +1,9 @@
 package com.sarojini.MyGardenCare.controllers;
 
 import com.sarojini.MyGardenCare.dtos.ApiErrorSchemaDto;
-import com.sarojini.MyGardenCare.dtos.UserCreateRequest;
-import com.sarojini.MyGardenCare.dtos.AuthenticationRequest;
-import com.sarojini.MyGardenCare.dtos.AuthenticationResponse;
+import com.sarojini.MyGardenCare.dtos.UserCreateRequestDto;
+import com.sarojini.MyGardenCare.dtos.AuthenticationRequestDto;
+import com.sarojini.MyGardenCare.dtos.AuthenticationResponseDto;
 import com.sarojini.MyGardenCare.services.AuthenticationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -32,7 +32,7 @@ public class AuthenticationController {
     responses = {
             @ApiResponse(responseCode = "201",
                     description = "New user registered successfully and JWT token generated",
-            content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))),
+            content = @Content(schema = @Schema(implementation = AuthenticationResponseDto.class))),
 
             @ApiResponse(responseCode = "400",
                     description = "Bad request",
@@ -47,9 +47,9 @@ public class AuthenticationController {
                     }))
     })
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(
+    public ResponseEntity<AuthenticationResponseDto> register(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "New user information", required = true)
-            @Valid @RequestBody UserCreateRequest createReq){
+            @Valid @RequestBody UserCreateRequestDto createReq){
         return ResponseEntity.status(HttpStatus.CREATED).body(authenticationService.register(createReq));
     }
 
@@ -58,7 +58,7 @@ public class AuthenticationController {
     responses = {
             @ApiResponse(responseCode = "200",
                     description = "User authenticated successfully",
-                    content = @Content(schema = @Schema(implementation = AuthenticationResponse.class))
+                    content = @Content(schema = @Schema(implementation = AuthenticationResponseDto.class))
             ),
 
             @ApiResponse(responseCode = "401",
@@ -78,9 +78,9 @@ public class AuthenticationController {
                     }))
     })
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(
+    public ResponseEntity<AuthenticationResponseDto> authenticate(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "User login information", required = true)
-            @RequestBody AuthenticationRequest authReq){
+            @RequestBody AuthenticationRequestDto authReq){
         return ResponseEntity.ok(authenticationService.authenticate((authReq)));
     }
 }

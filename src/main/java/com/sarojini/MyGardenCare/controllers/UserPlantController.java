@@ -1,8 +1,8 @@
 package com.sarojini.MyGardenCare.controllers;
 import com.sarojini.MyGardenCare.dtos.ApiErrorSchemaDto;
-import com.sarojini.MyGardenCare.dtos.UserPlantCreateRequest;
-import com.sarojini.MyGardenCare.dtos.UserPlantResponse;
-import com.sarojini.MyGardenCare.dtos.UserPlantUpdateRequest;
+import com.sarojini.MyGardenCare.dtos.UserPlantCreateRequestDto;
+import com.sarojini.MyGardenCare.dtos.UserPlantResponseDto;
+import com.sarojini.MyGardenCare.dtos.UserPlantUpdateRequestDto;
 import com.sarojini.MyGardenCare.entities.User;
 import com.sarojini.MyGardenCare.services.UserPlantService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -35,11 +35,11 @@ public class UserPlantController {
     @Operation(summary = "Get all plants in this user's garden",
     description = "Get a list of all the plants the current user has. If they have none, an empty list will be returned.",
     responses = {
-            @ApiResponse(responseCode = "200", description = "User's plants found and returned", content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserPlantResponse.class)))),
+            @ApiResponse(responseCode = "200", description = "User's plants found and returned", content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserPlantResponseDto.class)))),
             @ApiResponse(responseCode = "403", description = "Unauthorized request, missing or invalid JWT", content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class)))
     })
-    public ResponseEntity<List<UserPlantResponse>> getAllUserPlants(@AuthenticationPrincipal User user){
-        List<UserPlantResponse> userPlants = userPlantService.getAllUserPlants(user);
+    public ResponseEntity<List<UserPlantResponseDto>> getAllUserPlants(@AuthenticationPrincipal User user){
+        List<UserPlantResponseDto> userPlants = userPlantService.getAllUserPlants(user);
         return ResponseEntity.ok(userPlants);
     }
 
@@ -51,7 +51,7 @@ public class UserPlantController {
     """,
     responses = {
             @ApiResponse(responseCode =  "200", description = "Plants found and returned",
-            content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserPlantResponse.class)))),
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = UserPlantResponseDto.class)))),
             @ApiResponse(responseCode = "404", description = "Plants not found",
                     content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class))),
             @ApiResponse(responseCode = "400", description = "Bad request",
@@ -59,10 +59,10 @@ public class UserPlantController {
             @ApiResponse(responseCode = "403", description = "Unauthorized request, missing or invalid JWT",
                     content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class)))
     })
-    public ResponseEntity<List<UserPlantResponse>> getAllUserPlantsByPlantName(@AuthenticationPrincipal User user,
-                                                                               @Parameter(description = "Common name of the plant", example = "tomato")
+    public ResponseEntity<List<UserPlantResponseDto>> getAllUserPlantsByPlantName(@AuthenticationPrincipal User user,
+                                                                                  @Parameter(description = "Common name of the plant", example = "tomato")
                                                                                @RequestParam("plant-name") String plantName){
-       List<UserPlantResponse> userPlantsByPlantName = userPlantService.getAllUserPlantsByPlantName(user, plantName);
+       List<UserPlantResponseDto> userPlantsByPlantName = userPlantService.getAllUserPlantsByPlantName(user, plantName);
        return ResponseEntity.ok(userPlantsByPlantName);
     }
 
@@ -70,7 +70,7 @@ public class UserPlantController {
     @GetMapping("/{id}")
     @Operation(summary = "Get a specific plant by id",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Plant found", content = @Content(schema = @Schema(implementation = UserPlantResponse.class))),
+                    @ApiResponse(responseCode = "200", description = "Plant found", content = @Content(schema = @Schema(implementation = UserPlantResponseDto.class))),
                     @ApiResponse(responseCode = "404", description = "Plant not found",
                             content = @Content(
                                     schema = @Schema(implementation = ApiErrorSchemaDto.class),
@@ -86,8 +86,8 @@ public class UserPlantController {
                     @ApiResponse(responseCode = "400", description = "Bad request",  content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class))),
                     @ApiResponse(responseCode = "403", description = "Unauthorized request, missing or invalid JWT", content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class)))
             })
-    public ResponseEntity<UserPlantResponse> getUserPlantById(@PathVariable Long id, @AuthenticationPrincipal User user){
-        UserPlantResponse userPlantById = userPlantService.getUserPlantById(id, user);
+    public ResponseEntity<UserPlantResponseDto> getUserPlantById(@PathVariable Long id, @AuthenticationPrincipal User user){
+        UserPlantResponseDto userPlantById = userPlantService.getUserPlantById(id, user);
         return ResponseEntity.ok(userPlantById);
     }
 
@@ -99,7 +99,7 @@ public class UserPlantController {
                     Users can have two of the same plant, as long as they differ by nickname
                     """,
             responses = {
-                    @ApiResponse(responseCode = "201", description = "New plant added to user's garden", content = @Content(schema = @Schema(implementation = UserPlantResponse.class))),
+                    @ApiResponse(responseCode = "201", description = "New plant added to user's garden", content = @Content(schema = @Schema(implementation = UserPlantResponseDto.class))),
                     @ApiResponse(responseCode = "409", description = "User already has this plant", content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class))),
                     @ApiResponse(responseCode = "400", description = "Plant request was not well formed",
                             content = @Content(
@@ -117,10 +117,10 @@ public class UserPlantController {
                             )),
                     @ApiResponse(responseCode = "403", description = "Unauthorized request, missing or invalid JWT",content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class)))
             })
-    public ResponseEntity<UserPlantResponse> createUserPlant(@AuthenticationPrincipal User user,
-                                                             @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "New plant to add to user's garden", required = true)
-                                                             @Valid @RequestBody UserPlantCreateRequest createReq){
-        UserPlantResponse newUserPlant = userPlantService.createUserPlant(user, createReq);
+    public ResponseEntity<UserPlantResponseDto> createUserPlant(@AuthenticationPrincipal User user,
+                                                                @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "New plant to add to user's garden", required = true)
+                                                             @Valid @RequestBody UserPlantCreateRequestDto createReq){
+        UserPlantResponseDto newUserPlant = userPlantService.createUserPlant(user, createReq);
         return ResponseEntity.status(HttpStatus.CREATED).body(newUserPlant);
     }
 
@@ -143,11 +143,11 @@ public class UserPlantController {
         @ApiResponse(responseCode = "409", description = "User already has this plant", content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized request, missing or invalid JWT", content = @Content(schema = @Schema(implementation = ApiErrorSchemaDto.class)))
     })
-    public ResponseEntity<UserPlantResponse> updateUserPlantById(@PathVariable Long id,
-                                                                 @AuthenticationPrincipal User user,
-                                                                 @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Partial updates to an existing plant", required = true)
-                                                                 @RequestBody UserPlantUpdateRequest updateReq){
-        UserPlantResponse updatedUserPlant = userPlantService.updateUserPlantById(user, id, updateReq);
+    public ResponseEntity<UserPlantResponseDto> updateUserPlantById(@PathVariable Long id,
+                                                                    @AuthenticationPrincipal User user,
+                                                                    @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "Partial updates to an existing plant", required = true)
+                                                                 @RequestBody UserPlantUpdateRequestDto updateReq){
+        UserPlantResponseDto updatedUserPlant = userPlantService.updateUserPlantById(user, id, updateReq);
         return ResponseEntity.ok(updatedUserPlant);
 
     }

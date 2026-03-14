@@ -1,8 +1,8 @@
 package com.sarojini.MyGardenCare;
 
-import com.sarojini.MyGardenCare.dtos.UserCreateRequest;
-import com.sarojini.MyGardenCare.dtos.UserResponse;
-import com.sarojini.MyGardenCare.dtos.UserUpdateRequest;
+import com.sarojini.MyGardenCare.dtos.UserCreateRequestDto;
+import com.sarojini.MyGardenCare.dtos.UserResponseDto;
+import com.sarojini.MyGardenCare.dtos.UserUpdateRequestDto;
 import com.sarojini.MyGardenCare.entities.User;
 import com.sarojini.MyGardenCare.exceptions.ConflictException;
 import com.sarojini.MyGardenCare.repositories.UserRepository;
@@ -18,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,7 +47,7 @@ public class UserServiceTest {
 
         when(userRepository.findAll()).thenReturn(allUsers);
 
-        List<UserResponse> allUsersResponse = userService.getAllUsers();
+        List<UserResponseDto> allUsersResponse = userService.getAllUsers();
 
         assertEquals(2, allUsersResponse.size());
         assertEquals(user1.getUsername(), allUsersResponse.get(0).getUsername());
@@ -62,10 +61,10 @@ public class UserServiceTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(existingUser));
 
-        UserResponse userResponse = userService.getUserById(1L);
+        UserResponseDto userResponseDto = userService.getUserById(1L);
 
-        assertNotNull(userResponse);
-        assertEquals(1L, userResponse.getId());
+        assertNotNull(userResponseDto);
+        assertEquals(1L, userResponseDto.getId());
         verify(userRepository, times(1)).findById(1L);
     }
 
@@ -84,10 +83,10 @@ public class UserServiceTest {
 
         when(userRepository.findByUsernameIgnoreCase("user01")).thenReturn(Optional.of(existingUser));
 
-        UserResponse userResponse = userService.getUserByUsername("user01");
+        UserResponseDto userResponseDto = userService.getUserByUsername("user01");
 
-        assertNotNull(userResponse);
-        assertEquals("user01", userResponse.getUsername());
+        assertNotNull(userResponseDto);
+        assertEquals("user01", userResponseDto.getUsername());
         verify(userRepository, times(1)).findByUsernameIgnoreCase("user01");
     }
 
@@ -103,7 +102,7 @@ public class UserServiceTest {
     @Test
     public void createNewUser_Success(){
 
-        UserCreateRequest createReq = userCreateRequestHelper("user01",
+        UserCreateRequestDto createReq = userCreateRequestHelper("user01",
                 "user01@gmail.com",
                 "123",
                 "12345");
@@ -111,15 +110,15 @@ public class UserServiceTest {
         when(passwordEncoder.encode("123")).thenReturn("encoded123");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse userResponse = userService.createNewUser(createReq);
+        UserResponseDto userResponseDto = userService.createNewUser(createReq);
 
         verify(userRepository).save(userArgumentCaptor.capture());
         User capturedUser = userArgumentCaptor.getValue();
 
-        assertNotNull(userResponse);
-        assertEquals("user01", userResponse.getUsername());
-        assertEquals("user01@gmail.com", userResponse.getEmail());
-        assertEquals("12345", userResponse.getZipcode());
+        assertNotNull(userResponseDto);
+        assertEquals("user01", userResponseDto.getUsername());
+        assertEquals("user01@gmail.com", userResponseDto.getEmail());
+        assertEquals("12345", userResponseDto.getZipcode());
         assertEquals("encoded123", capturedUser.getPassword());
 
         verify(passwordEncoder, times(1)).encode("123");
@@ -127,7 +126,7 @@ public class UserServiceTest {
 
     @Test
     public void createNewUser_NormalizeEmailOrUsername_Success(){
-        UserCreateRequest createReq = userCreateRequestHelper("user01  ",
+        UserCreateRequestDto createReq = userCreateRequestHelper("user01  ",
                 "  user01@gmail.com  ",
                 "123",
                 "12345");
@@ -135,11 +134,11 @@ public class UserServiceTest {
         when(passwordEncoder.encode("123")).thenReturn("encoded123");
         when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse userResponse = userService.createNewUser(createReq);
+        UserResponseDto userResponseDto = userService.createNewUser(createReq);
 
-        assertNotNull(userResponse);
-        assertEquals("user01", userResponse.getUsername());
-        assertEquals("user01@gmail.com", userResponse.getEmail());
+        assertNotNull(userResponseDto);
+        assertEquals("user01", userResponseDto.getUsername());
+        assertEquals("user01@gmail.com", userResponseDto.getEmail());
 
         verify(userRepository, times(1)).save(any(User.class));
         verify(passwordEncoder, times(1)).encode("123");
@@ -147,7 +146,7 @@ public class UserServiceTest {
 
     @Test
     public void createNewUser_ThrowsConflictException_WhenUsernameOrEmailIsDuplicate(){
-        UserCreateRequest createReq = userCreateRequestHelper("user01",
+        UserCreateRequestDto createReq = userCreateRequestHelper("user01",
                 "user01@gmail.com",
                 "abc",
                 "12345");
@@ -174,12 +173,12 @@ public class UserServiceTest {
         when(userRepository.findByUsernameIgnoreCase(existingUser.getUsername())).thenReturn(Optional.of(existingUser));
         when(passwordEncoder.encode("abc")).thenReturn("encodedAbc");
 
-        UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.of("user02"),
+        UserUpdateRequestDto updateReq = userUpdateRequestHelper(Optional.of("user02"),
                 Optional.of(" "),
                 Optional.of("abc"),
                 Optional.of("02156"));
 
-        UserResponse updatedUser = userService.updateMyProfile(existingUser.getUsername(), updateReq);
+        UserResponseDto updatedUser = userService.updateMyProfile(existingUser.getUsername(), updateReq);
 
         verify(userRepository).save(userArgumentCaptor.capture());
         User capturedUser = userArgumentCaptor.getValue();
@@ -200,12 +199,12 @@ public class UserServiceTest {
 
         when(userRepository.findByUsernameIgnoreCase(existingUser.getUsername())).thenReturn(Optional.of(existingUser));
 
-        UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.empty(),
+        UserUpdateRequestDto updateReq = userUpdateRequestHelper(Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.of(""));
 
-        UserResponse updatedUser = userService.updateMyProfile( existingUser.getUsername(), updateReq);
+        UserResponseDto updatedUser = userService.updateMyProfile( existingUser.getUsername(), updateReq);
 
         verify(userRepository).save(userArgumentCaptor.capture());
         User capturedUser = userArgumentCaptor.getValue();
@@ -222,15 +221,15 @@ public class UserServiceTest {
 
         when(userRepository.findByUsernameIgnoreCase(existingUser.getUsername())).thenReturn(Optional.of(existingUser));
 
-        UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.of("user01"),
+        UserUpdateRequestDto updateReq = userUpdateRequestHelper(Optional.of("user01"),
                 Optional.of("user01@gmail.com"),
                 Optional.empty(),
                 Optional.empty());
 
-        UserResponse userResponse = userService.updateMyProfile(existingUser.getUsername(), updateReq);
+        UserResponseDto userResponseDto = userService.updateMyProfile(existingUser.getUsername(), updateReq);
 
-        assertEquals("user01", userResponse.getUsername());
-        assertEquals("user01@gmail.com", userResponse.getEmail());
+        assertEquals("user01", userResponseDto.getUsername());
+        assertEquals("user01@gmail.com", userResponseDto.getEmail());
 
         verify(userRepository, times(2)).findByUsernameIgnoreCase(existingUser.getUsername());
     }
@@ -238,7 +237,7 @@ public class UserServiceTest {
 
     @Test
     public void updateMyProfile_ThrowEntityNotFoundException_WhenUserDoesNotExist(){
-        UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.of("user02"),
+        UserUpdateRequestDto updateReq = userUpdateRequestHelper(Optional.of("user02"),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty());
@@ -259,7 +258,7 @@ public class UserServiceTest {
         when(userRepository.findByUsernameIgnoreCase(userToUpdate.getUsername())).thenReturn(Optional.of(userToUpdate));
         when(userRepository.findByUsernameIgnoreCase(otherExistingUser.getUsername())).thenReturn(Optional.of(otherExistingUser));
 
-        UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.of("user02"),
+        UserUpdateRequestDto updateReq = userUpdateRequestHelper(Optional.of("user02"),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty());
@@ -280,7 +279,7 @@ public class UserServiceTest {
         when(userRepository.findByUsernameIgnoreCase(userToUpdate.getUsername())).thenReturn(Optional.of(userToUpdate));
         when(userRepository.findByEmailIgnoreCase(otherExistingUser.getEmail())).thenReturn(Optional.of(otherExistingUser));
 
-        UserUpdateRequest updateReq = userUpdateRequestHelper(Optional.empty(),
+        UserUpdateRequestDto updateReq = userUpdateRequestHelper(Optional.empty(),
                 Optional.of("user02@gmail.com"),
                 Optional.empty(),
                 Optional.empty());
@@ -334,11 +333,11 @@ public class UserServiceTest {
     }
 
 
-    private UserCreateRequest userCreateRequestHelper(String username,
-                                                      String email,
-                                                      String password,
-                                                      String zipcode){
-        UserCreateRequest createReq = new UserCreateRequest();
+    private UserCreateRequestDto userCreateRequestHelper(String username,
+                                                         String email,
+                                                         String password,
+                                                         String zipcode){
+        UserCreateRequestDto createReq = new UserCreateRequestDto();
         createReq.setUsername(username);
         createReq.setEmail(email);
         createReq.setPassword(password);
@@ -347,11 +346,11 @@ public class UserServiceTest {
         return createReq;
     }
 
-    private UserUpdateRequest userUpdateRequestHelper(Optional<String> username,
-                                                      Optional<String> email,
-                                                      Optional<String> password,
-                                                      Optional<String> zipcode){
-        UserUpdateRequest updateReq = new UserUpdateRequest();
+    private UserUpdateRequestDto userUpdateRequestHelper(Optional<String> username,
+                                                         Optional<String> email,
+                                                         Optional<String> password,
+                                                         Optional<String> zipcode){
+        UserUpdateRequestDto updateReq = new UserUpdateRequestDto();
         if(username.isPresent()) updateReq.setUsername(username.get());
         if(email.isPresent()) updateReq.setEmail(email.get());
         if(password.isPresent()) updateReq.setPassword(password.get());

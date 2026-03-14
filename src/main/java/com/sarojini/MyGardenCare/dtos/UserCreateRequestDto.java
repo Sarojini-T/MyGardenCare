@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
-public class UserCreateRequest {
+public class UserCreateRequestDto {
     @NotBlank(message = "Username is required")
     @Schema(example = "Anna")
     private String username;
