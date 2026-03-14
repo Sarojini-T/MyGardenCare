@@ -12,6 +12,7 @@ import com.sarojini.MyGardenCare.enums.PlantLocation;
 import com.sarojini.MyGardenCare.exceptions.ConflictException;
 import com.sarojini.MyGardenCare.repositories.PlantRepository;
 import com.sarojini.MyGardenCare.repositories.UserPlantRepository;
+import com.sarojini.MyGardenCare.services.PlantRecommendationService;
 import com.sarojini.MyGardenCare.services.UserPlantService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +28,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class UserPlantTest {
@@ -35,6 +37,9 @@ public class UserPlantTest {
 
     @Mock
     private PlantRepository plantRepository;
+
+    @Mock
+    private PlantRecommendationService plantRecommendationService;
 
     @InjectMocks
     private UserPlantService userPlantService;
@@ -56,7 +61,21 @@ public class UserPlantTest {
 
         List<UserPlant> mockUserPlantList = List.of(tomatoUserPlant, peaceLilyUserPlant);
 
+        UserPlantResponseDto tomatoUserPlantResp = new UserPlantResponseDto();
+        tomatoUserPlantResp.setNickname("Tomato");
+        tomatoUserPlantResp.setPlantId(1L);
+        List<String> tomatoPlantRecs = List.of("Place near a south or west facing window.", "If possible add drainage holes to your container");
+        tomatoUserPlantResp.setPlantCareRecommendations(tomatoPlantRecs);
+
+        UserPlantResponseDto peaceLilyUserPlantResp = new UserPlantResponseDto();
+        peaceLilyUserPlantResp.setNickname("Lily");
+        peaceLilyUserPlantResp.setPlantId(2L);
+        List<String> peaceLilyPlantRecs = List.of("Place in a shaded area");
+        peaceLilyUserPlantResp.setPlantCareRecommendations(peaceLilyPlantRecs);
+
         when(userPlantRepository.findByUser(user)).thenReturn(mockUserPlantList);
+        when(plantRecommendationService.addRecommendationsToPlant(tomatoUserPlant)).thenReturn(tomatoPlantRecs);
+        when(plantRecommendationService.addRecommendationsToPlant(peaceLilyUserPlant)).thenReturn(peaceLilyPlantRecs);
 
         List<UserPlantResponseDto> userPlantResponseDtoList = userPlantService.getAllUserPlants(user);
 
@@ -64,8 +83,12 @@ public class UserPlantTest {
         assertEquals(2, userPlantResponseDtoList.size());
         assertEquals("Tomato", userPlantResponseDtoList.get(0).getNickname());
         assertEquals("Lily", userPlantResponseDtoList.get(1).getNickname());
+        assertNotNull(userPlantResponseDtoList.get(0).getPlantCareRecommendations());
+        assertNotNull(userPlantResponseDtoList.get(1).getPlantCareRecommendations());
 
         verify(userPlantRepository, times(1)).findByUser(user);
+        verify(plantRecommendationService, times(1)).addRecommendationsToPlant(tomatoUserPlant);
+        verify(plantRecommendationService, times(1)).addRecommendationsToPlant(peaceLilyUserPlant);
     }
 
     @Test
@@ -77,8 +100,23 @@ public class UserPlantTest {
 
         List<UserPlant> mockUserPlantList = List.of(tomatoUserPlant1, tomatoUserPlant2);
 
+        List<String> tomatoPlantRecs = List.of("Place near a south or west facing window.", "If possible add drainage holes to your container");
+
+        UserPlantResponseDto tomatoUserPlant1Resp = new UserPlantResponseDto();
+        tomatoUserPlant1Resp.setNickname("Tomato");
+        tomatoUserPlant1Resp.setPlantId(1L);
+        tomatoUserPlant1Resp.setPlantCareRecommendations(tomatoPlantRecs);
+
+        UserPlantResponseDto tomatoUserPlant2Resp = new UserPlantResponseDto();
+        tomatoUserPlant2Resp.setNickname("Tomato");
+        tomatoUserPlant2Resp.setPlantId(1L);
+        tomatoUserPlant2Resp.setPlantCareRecommendations(tomatoPlantRecs);
+
         when(plantRepository.findByCommonName("Heirloom Tomato")).thenReturn(Optional.of(tomatoPlant));
         when(userPlantRepository.findByUserAndPlantId(user,1L)).thenReturn(mockUserPlantList);
+        when(plantRecommendationService.addRecommendationsToPlant(tomatoUserPlant1)).thenReturn(tomatoPlantRecs);
+        when(plantRecommendationService.addRecommendationsToPlant(tomatoUserPlant2)).thenReturn(tomatoPlantRecs);
+
 
         List<UserPlantResponseDto> userPlantResponseDtoList = userPlantService.getAllUserPlantsByPlantName(user, "Heirloom Tomato");
 
@@ -86,8 +124,13 @@ public class UserPlantTest {
         assertEquals(2, userPlantResponseDtoList.size());
         assertEquals("Tomato1", userPlantResponseDtoList.get(0).getNickname());
         assertEquals("Tomato2", userPlantResponseDtoList.get(1).getNickname());
+        assertNotNull(userPlantResponseDtoList.get(0).getPlantCareRecommendations());
+        assertNotNull(userPlantResponseDtoList.get(1).getPlantCareRecommendations());
 
         verify(userPlantRepository, times(1)).findByUserAndPlantId(user, 1L);
+        verify(plantRecommendationService, times(1)).addRecommendationsToPlant(tomatoUserPlant1);
+        verify(plantRecommendationService, times(1)).addRecommendationsToPlant(tomatoUserPlant2);
+
     }
 
     @Test
@@ -105,14 +148,23 @@ public class UserPlantTest {
 
         UserPlant tomatoUserPlant = createNewUserPlant("Tomato", user, tomatoPlant, PlantContainer.POT, PlantLocation.INDOOR, 1L);
 
+        List<String> tomatoPlantRecs = List.of("Place near a south or west facing window.", "If possible add drainage holes to your container");
+
+        UserPlantResponseDto tomatoPlantResp = new UserPlantResponseDto();
+        tomatoPlantResp.setNickname("Tomato");
+        tomatoPlantResp.setPlantCareRecommendations(tomatoPlantRecs);
+
         when(userPlantRepository.findByIdAndUser(1L, user)).thenReturn(Optional.of(tomatoUserPlant));
+        when(plantRecommendationService.addRecommendationsToPlant(tomatoUserPlant)).thenReturn(tomatoPlantRecs);
 
         UserPlantResponseDto userPlantResponseDto = userPlantService.getUserPlantById(1L, user);
 
         assertNotNull(userPlantResponseDto);
         assertEquals(1L, userPlantResponseDto.getUserPlantId());
+        assertNotNull(userPlantResponseDto.getPlantCareRecommendations());
 
         verify(userPlantRepository, times(1)).findByIdAndUser(1L, user);
+        verify(plantRecommendationService, times(1)).addRecommendationsToPlant(tomatoUserPlant);
     }
 
     @Test
@@ -130,15 +182,20 @@ public class UserPlantTest {
 
         UserPlantCreateRequestDto createReq = getUserPlantCreateRequest(1L, "Tomato", PlantContainer.POT, PlantLocation.INDOOR);
 
+        List<String> tomatoPlantRecs = List.of("Place near a south or west facing window.", "If possible add drainage holes to your container");
+
         when(plantRepository.findById(1L)).thenReturn(Optional.of(tomatoPlant));
         when(userPlantRepository.save(any(UserPlant.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(plantRecommendationService.addRecommendationsToPlant(any(UserPlant.class))).thenReturn(tomatoPlantRecs);
 
         UserPlantResponseDto userPlantResponseDto = userPlantService.createUserPlant(user, createReq);
 
         assertNotNull(userPlantResponseDto);
         assertEquals("Tomato", userPlantResponseDto.getNickname());
+        assertEquals(2, userPlantResponseDto.getPlantCareRecommendations().size());
 
         verify(userPlantRepository, times(1)).save(any(UserPlant.class));
+        verify(plantRecommendationService, times(1)).addRecommendationsToPlant(any(UserPlant.class));
     }
 
     @Test
@@ -208,16 +265,21 @@ public class UserPlantTest {
                 Optional.of(ContainerSize.MEDIUM),
                 Optional.of(true));
 
+        List<String> updatedRecs = List.of("Move to a sunny spot outdoors");
+
         when(userPlantRepository.findByIdAndUser(1L, user)).thenReturn(Optional.of(existingUserPlant));
         when(userPlantRepository.existsByUserAndNicknameIgnoreCase(user, "Tomato1")).thenReturn(false);
+        when(plantRecommendationService.addRecommendationsToPlant(existingUserPlant)).thenReturn(updatedRecs);
 
         UserPlantResponseDto userPlantResponseDto = userPlantService.updateUserPlantById(user, 1L, updateReq);
 
         assertNotNull(userPlantResponseDto);
         assertEquals("Tomato1", userPlantResponseDto.getNickname());
+        assertNotNull(userPlantResponseDto.getPlantCareRecommendations());
 
         verify(userPlantRepository, times(1)).findByIdAndUser(1L, user);
         verify(userPlantRepository, times(1)).existsByUserAndNicknameIgnoreCase(user, "Tomato1");
+        verify(plantRecommendationService, times(1)).addRecommendationsToPlant(existingUserPlant);
     }
 
     @Test
@@ -234,17 +296,20 @@ public class UserPlantTest {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty());
+        List<String> outdoorRecs = List.of("Ensure soil has good drainage");
 
         when(userPlantRepository.findByIdAndUser(1l, user)).thenReturn(Optional.of(existingUserPlant));
+        when(plantRecommendationService.addRecommendationsToPlant(existingUserPlant)).thenReturn(outdoorRecs);
 
         UserPlantResponseDto userPlantResponseDto = userPlantService.updateUserPlantById(user, 1L, updateReq);
 
         assertNull(userPlantResponseDto.getContainerSize());
         assertNull(userPlantResponseDto.getHasDrainage());
         assertEquals(PlantLocation.OUTDOOR, userPlantResponseDto.getPlantLocation());
+        assertNotNull(userPlantResponseDto.getPlantCareRecommendations());
 
         verify(userPlantRepository, times(1)).findByIdAndUser(1l, user);
-
+        verify(plantRecommendationService, times(1)).addRecommendationsToPlant(existingUserPlant);
     }
 
     @Test
